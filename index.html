@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Écoville</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -26,7 +31,10 @@
   --shadow: 5px 5px 0 var(--ink);
 }
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html, body { min-height: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
 body {
   margin: 0; color: var(--ink); font-family: var(--body); font-weight: 600; font-size: 17px; line-height: 1.4;
   background-color: var(--sky2);
@@ -248,6 +256,12 @@ select, input[type=text] { font: inherit; font-weight: 800; padding: 9px 10px; b
 .storybtn { display: flex; align-items: center; gap: 12px; }
 
 /* ---------- téléphone ---------- */
+.ph-help { background: #fff4d1; border: 3px dashed var(--ink); border-radius: 14px; padding: 12px 14px; font-weight: 800; display: flex; flex-direction: column; gap: 10px; }
+.ph-help small { font-weight: 600; color: var(--muted); }
+.phones-count { font-family: var(--comic); letter-spacing: 0.05em; font-size: 1.1rem; background: #7bd389; border: 3px solid var(--ink); border-radius: 10px; padding: 2px 12px; box-shadow: 3px 3px 0 var(--ink); align-self: flex-start; }
+.phones-count.zero { background: #eee; }
+.slidein { animation: slidein 0.45s cubic-bezier(.2,1.2,.4,1) both; }
+@keyframes slidein { from { transform: translateX(40px) rotate(1deg); opacity: 0; } to { transform: none; opacity: 1; } }
 .phone { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
 .ph-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .ph-head .logo { font-size: 2.2rem; }
@@ -306,6 +320,8 @@ select, input[type=text] { font: inherit; font-weight: 800; padding: 9px 10px; b
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style>
+</head>
+<body>
 
 <div class="bgclouds" aria-hidden="true">
   <svg viewBox="0 0 60 32" style="top:8%;animation-duration:90s;animation-delay:-20s"><path d="M2 24q0-10 10-10q3-9 14-7q7-7 16 0q12 0 12 10q0 7-7 7H9q-7 0-7 0z" fill="#fff" stroke="#1d1d1b" stroke-width="2"/></svg>
@@ -428,6 +444,8 @@ const MASCOT = `<svg class="mascot" viewBox="0 0 100 100" aria-hidden="true">
 const GLOBE = `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="#2f90d8" ${O}/><path d="M9 12q6 2 6 8t-6 8M24 6q-4 6 2 10t10 0M22 34q2-6 8-6" fill="#4caf50" ${O}/></svg>`;
 const SOUND_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="${I}"/><path d="M16 8q3 4 0 8M19 5q5 7 0 14" fill="none" stroke="${I}" stroke-width="2.2" stroke-linecap="round"/></svg>`;
 const SOUND_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="${I}"/><path d="M16 9l6 6M22 9l-6 6" stroke="${I}" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+const MUSIC_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V5l11-2v12" fill="none" stroke="${I}" stroke-width="2.2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="${I}"/><circle cx="17.5" cy="15.5" r="2.8" fill="${I}"/></svg>`;
+const MUSIC_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V5l11-2v12" fill="none" stroke="${I}" stroke-width="2.2" stroke-linejoin="round" opacity=".35"/><circle cx="6.5" cy="17.5" r="2.8" fill="${I}" opacity=".35"/><circle cx="17.5" cy="15.5" r="2.8" fill="${I}" opacity=".35"/><path d="M3 3l18 18" stroke="${I}" stroke-width="2.4" stroke-linecap="round"/></svg>`;
 const BURST = c => `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${(() => { let d = ""; for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2, r = i % 2 ? 36 : 49; d += (i ? "L" : "M") + (50 + r * Math.cos(a)).toFixed(1) + " " + (50 + r * Math.sin(a)).toFixed(1); } return d + "z"; })()}" fill="${c}" stroke="${I}" stroke-width="3" stroke-linejoin="round"/></svg>`;
 
 // ---------- Quartiers / thèmes ----------
@@ -551,7 +569,7 @@ const PEER_PREFIX = "ecoville-qst-";
 const LETTERS = "ABCD";
 
 // ---------- version : l'écran et les téléphones doivent afficher la même ----------
-const APP_VERSION = "4";
+const APP_VERSION = "5";
 function checkVersion() {
   const base = location.pathname;
   fetch(base + "?_=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(txt => {
@@ -643,7 +661,40 @@ function tone(f, d, type = "square", when = 0, vol = 0.05) {
     o.connect(gn).connect(AC.destination); o.start(t); o.stop(t + d + 0.03);
   } catch {}
 }
+function whoosh(dur = 0.35, vol = 0.12) {
+  if (!soundOn || !AC) return;
+  try {
+    const len = Math.floor(AC.sampleRate * dur), buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const src = AC.createBufferSource(), f = AC.createBiquadFilter(), gn = AC.createGain(), t = AC.currentTime;
+    f.type = "bandpass"; f.Q.value = 1.2; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(3200, t + dur);
+    gn.gain.setValueAtTime(vol, t); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.buffer = buf; src.connect(f).connect(gn).connect(AC.destination); src.start(t);
+  } catch {}
+}
+// petite musique d'ambiance (boucle chiptune douce), seulement sur l'écran
+let musicOn = store.get("ecoville-music") ?? true, musicTimer = null, musicStep = 0, musicMood = "calm";
+const MEL = [523, 0, 659, 0, 784, 659, 0, 587, 523, 0, 440, 0, 392, 0, 440, 523, 587, 0, 659, 0, 784, 0, 880, 784, 659, 0, 587, 0, 523, 0, 0, 0];
+const BASS = [131, 131, 165, 165, 175, 175, 196, 196];
+function musicTick() {
+  if (!soundOn || !musicOn || !AC) return;
+  const st = musicStep++ % 32;
+  if (musicMood === "tense") {
+    if (st % 4 === 0) tone(st % 8 === 0 ? 98 : 87, 0.18, "triangle", 0, 0.07);
+    if (st % 4 === 2) tone(1568, 0.02, "square", 0, 0.008);
+    return;
+  }
+  if (MEL[st]) tone(MEL[st], 0.16, "triangle", 0, 0.022);
+  if (st % 4 === 0) tone(BASS[(st / 4) % 8], 0.3, "triangle", 0, 0.035);
+}
+function startMusic() { if (!musicTimer) musicTimer = setInterval(musicTick, 160); }
+function setMood(m) { musicMood = m; }
 const sfx = {
+  page() { whoosh(0.3, 0.1); tone(880, 0.05, "triangle", 0.12, 0.03); },
+  tap() { tone(740, 0.05, "square", 0, 0.04); },
+  join() { [659, 880, 1175].forEach((f, i) => tone(f, 0.1, "square", i * 0.07, 0.04)); },
+  question() { whoosh(0.25, 0.08); tone(988, 0.12, "square", 0.05, 0.05); tone(1319, 0.2, "square", 0.15, 0.05); },
+  drum() { for (let i = 0; i < 8; i++) tone(120 + i * 6, 0.05, "triangle", i * 0.06, 0.06); tone(523, 0.2, "square", 0.5, 0.05); },
   start() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, "square", i * 0.1)); },
   pick() { tone(660, 0.08); tone(990, 0.12, "square", 0.08); },
   tick() { tone(880, 0.05, "triangle", 0, 0.06); },
@@ -674,17 +725,17 @@ function phoneUrl() { return location.href.split("#")[0].split("?")[0] + "?salle
 function startHost() {
   if (typeof Peer === "undefined" || typeof RTCPeerConnection === "undefined") { net = "off"; return render(); }
   let p;
-  try { p = new Peer(PEER_PREFIX + G.room.toLowerCase(), { debug: 0 }); } catch { net = "off"; return render(); }
+  try { p = new Peer(PEER_PREFIX + G.room.toLowerCase(), { debug: 0, ...(window.ECO_PEER_OPTS || {}) }); } catch { net = "off"; return render(); }
   peer = p;
   const failTimer = setTimeout(() => { if (net !== "on") { net = "off"; render(); } }, 12000);
   p.on("open", () => { clearTimeout(failTimer); net = "on"; render(); });
   p.on("connection", conn => {
-    conn.on("open", () => { conns.set(conn.peer, { conn, team: null }); sendView(conn.peer); });
+    conn.on("open", () => { conns.set(conn.peer, { conn, team: null }); sfx.tap(); render(); });
     conn.on("data", d => onPhone(conn.peer, d));
     conn.on("close", () => { conns.delete(conn.peer); render(); });
     conn.on("error", () => {});
   });
-  p.on("disconnected", () => { try { p.reconnect(); } catch {} });
+  p.on("disconnected", () => { setTimeout(() => { try { if (!p.destroyed && p.disconnected) p.reconnect(); } catch {} }, 1500); });
   p.on("error", e => {
     if (e.type === "unavailable-id") { clearTimeout(failTimer); p.destroy(); G.room = newRoom(); saveSetup(); startHost(); render(); }
     else if (["browser-incompatible", "network", "server-error", "socket-error", "ssl-unavailable"].includes(e.type) && net !== "on") { clearTimeout(failTimer); net = "off"; render(); }
@@ -695,7 +746,7 @@ function teamHasPhone(i) { for (const c of conns.values()) if (c.team === i) ret
 
 function onPhone(pid, d) {
   const c = conns.get(pid); if (!c || !d || typeof d !== "object") return;
-  if (d.t === "join" && Number.isInteger(d.team) && d.team >= 0 && d.team < G.nTeams) { c.team = d.team; render(); }
+  if (d.t === "join" && Number.isInteger(d.team) && d.team >= 0 && d.team < G.nTeams) { if (c.team !== d.team) sfx.join(); c.team = d.team; render(); }
   else if (d.t === "pick" && G.phase === "choose" && c.team === G.chooser && DMAP[d.k]) chooseDistrict(d.k);
   else if (d.t === "ans" && G.phase === "question" && c.team != null && Number.isInteger(d.i) && d.qid === G.cur.qid) setAnswer(c.team, d.i, false);
   else if (d.t === "hello") sendView(pid);
@@ -731,7 +782,7 @@ function broadcast() { for (const pid of conns.keys()) sendView(pid); }
 // ---------- déroulement ----------
 function startGame() {
   G.intro = null;
-  initAudio(); sfx.start();
+  initAudio(); startMusic(); setMood("calm"); sfx.start();
   saveSetup();
   G.teams = G.names.slice(0, G.nTeams).map((n, i) => ({ name: (n || "").trim() || TEAM_PRESETS[i].name, color: TEAM_PRESETS[i].color, score: 0, ans: null, at: 0, ok: null, gain: 0 }));
   G.districts = DISTRICTS.map(d => ({ ...d, h: START_HEALTH }));
@@ -742,6 +793,7 @@ function startGame() {
 }
 function nextRound() {
   G.round++; G.chooser = (G.round - 1) % G.nTeams; G.phase = "choose"; G.cur = null; G.lastDelta = null;
+  setMood("calm"); if (G.round > 1) sfx.page();
   render();
 }
 function pickQuestion(k) {
@@ -757,7 +809,7 @@ function pickQuestion(k) {
 }
 function chooseDistrict(k) {
   if (G.phase !== "choose") return;
-  initAudio(); sfx.pick();
+  initAudio(); sfx.question(); setMood("tense");
   const q = pickQuestion(k);
   let opts, correct;
   if (q.t === "vf") { opts = ["Vrai", "Faux"]; correct = q.v ? 0 : 1; }
@@ -784,7 +836,7 @@ function setAnswer(team, i, manual) {
   if (G.phase !== "question" || i < 0 || i >= G.cur.opts.length) return;
   const t = G.teams[team];
   if (t.ans != null && !manual) return;
-  t.ans = i; t.at = Date.now();
+  t.ans = i; t.at = Date.now(); sfx.tap();
   if (G.teams.every(x => x.ans != null)) { setTimeout(() => { if (G.phase === "question") reveal(); }, 700); }
   render();
 }
@@ -807,7 +859,7 @@ function reveal() {
   const before = d.h;
   d.h = Math.min(100, d.h + nOk * per);
   G.lastDelta = { k: c.k, d: Math.round(d.h - before), nOk };
-  G.phase = "reveal";
+  G.phase = "reveal"; setMood("calm");
   nOk > 0 ? sfx.good() : sfx.bad();
   render();
 }
@@ -841,7 +893,7 @@ function topbar() {
     <span class="logo">ÉCO<span class="v">VILLE</span></span>
     ${G.phase !== "lobby" ? `<div class="citymeter" role="meter" aria-label="Santé de la ville" aria-valuenow="${h}" aria-valuemin="0" aria-valuemax="100">${GLOBE}<div class="bar"><div style="width:${h}%"></div></div><span class="pct">${h}%</span></div>
     <span class="badge">MANCHE ${G.round}/${G.rounds}</span>` : ""}
-    <button class="iconbtn" id="sound" aria-label="${soundOn ? "Couper le son" : "Activer le son"}" title="Son">${soundOn ? SOUND_ON : SOUND_OFF}</button>
+    <div class="row"><button class="iconbtn" id="music" aria-label="${musicOn ? "Couper la musique" : "Activer la musique"}" title="Musique">${musicOn ? MUSIC_ON : MUSIC_OFF}</button><button class="iconbtn" id="sound" aria-label="${soundOn ? "Couper le son" : "Activer le son"}" title="Son">${soundOn ? SOUND_ON : SOUND_OFF}</button></div>
   </header>`;
 }
 
@@ -866,6 +918,7 @@ function renderLobby() {
       <div class="join">
         <div class="qr" id="qr" aria-label="QR code pour rejoindre la partie"></div>
         <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <span class="phones-count ${conns.size ? "" : "zero"}">${conns.size} TÉLÉPHONE${conns.size > 1 ? "S" : ""} CONNECTÉ${conns.size > 1 ? "S" : ""}</span>
           <span class="label">CODE DE LA SALLE</span>
           <span class="code">${esc(G.room)}</span>
           <ol class="steps"><li>Un téléphone par équipe scanne le QR code</li><li>Chaque groupe choisit son équipe</li><li>On lance la quête !</li></ol>
@@ -880,7 +933,7 @@ function renderLobby() {
   return `
   <header class="hero">
     <div><span class="logo">ÉCO<span class="v">VILLE</span></span><div class="tagline">La quête écologique de toute la classe</div><span class="ver">version ${APP_VERSION}</span></div>
-    <div class="row" style="gap:14px"><button class="iconbtn" id="sound" aria-label="${soundOn ? "Couper le son" : "Activer le son"}">${soundOn ? SOUND_ON : SOUND_OFF}</button></div>
+    <div class="row" style="gap:14px"><button class="iconbtn" id="music" aria-label="${musicOn ? "Couper la musique" : "Activer la musique"}">${musicOn ? MUSIC_ON : MUSIC_OFF}</button><button class="iconbtn" id="sound" aria-label="${soundOn ? "Couper le son" : "Activer le son"}">${soundOn ? SOUND_ON : SOUND_OFF}</button></div>
   </header>
   <div class="talk">${MASCOT}<div class="bubble">Au secours ! Les six quartiers d'Écoville sont pollués. Répondez juste pour les soigner : si tous atteignent <b>${GOAL} %</b> avant la fin, toute la classe gagne !</div></div>
   <section class="lobby">
@@ -986,7 +1039,7 @@ function renderIntroHost() {
       <div class="row"><button class="btn white" id="iprev" ${i === 0 ? "disabled" : ""}>◀</button><button class="btn ${last ? "green" : ""} big" id="inext">${last ? "À VOS TÉLÉPHONES !" : "SUITE ▶"}</button></div>
     </div></div>`;
 }
-function setIntro(i) { initAudio(); G.intro = i; if (i != null) sfx.pick(); render(); }
+function setIntro(i) { initAudio(); startMusic(); G.intro = i; sfx.page(); render(); }
 document.addEventListener("keydown", e => {
   if (MODE !== "host" || G.phase !== "lobby" || G.intro == null) return;
   if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); setIntro(G.intro < INTRO.length - 1 ? G.intro + 1 : null); }
@@ -1012,7 +1065,8 @@ function render() {
   const focused = document.activeElement && document.activeElement.id;
   app.innerHTML = G.phase === "lobby" ? renderLobby() : renderGame();
   if (focused && focused.startsWith("tn") && $("#" + focused)) { const el = $("#" + focused); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
-  $("#sound")?.addEventListener("click", () => { soundOn = !soundOn; store.set("ecoville-sound", soundOn); initAudio(); if (soundOn) sfx.pick(); render(); });
+  $("#sound")?.addEventListener("click", () => { soundOn = !soundOn; store.set("ecoville-sound", soundOn); initAudio(); startMusic(); if (soundOn) sfx.pick(); render(); });
+  $("#music")?.addEventListener("click", () => { musicOn = !musicOn; store.set("ecoville-music", musicOn); initAudio(); startMusic(); render(); });
   if (G.phase === "lobby") {
     const qrEl = $("#qr");
     if (qrEl && typeof qrcode !== "undefined") { const qr = qrcode(0, "M"); qr.addData(phoneUrl()); qr.make(); qrEl.innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); }
@@ -1047,27 +1101,51 @@ function render() {
 // =====================================================================
 //  MODE TÉLÉPHONE (manette d'équipe)
 // =====================================================================
-const P = { room: null, team: null, view: null, conn: null, peer: null, status: "connexion", answered: null, localLeft: 0, timer: null, li: 0, introDone: false, shown: null };
+const P = { room: null, team: null, view: null, conn: null, peer: null, status: "connexion", answered: null, localLeft: 0, timer: null, li: 0, introDone: false, shown: null, fails: 0, err: "", openTimer: null };
 
 function startPhone(room) {
   P.room = room.toUpperCase();
   const mem = store.get("ecoville-phone");
   if (mem && mem.room === P.room) { P.team = mem.team; P.introDone = true; }
   renderPhone();
-  if (typeof Peer === "undefined") { P.status = "indisponible"; return renderPhone(); }
-  P.peer = new Peer({ debug: 0 });
-  P.peer.on("open", connectPhone);
-  P.peer.on("error", e => { if (e.type === "peer-unavailable") { P.status = "salle introuvable"; renderPhone(); setTimeout(connectPhone, 4000); } });
-  P.peer.on("disconnected", () => { try { P.peer.reconnect(); } catch {} });
+  if (typeof Peer === "undefined" || typeof RTCPeerConnection === "undefined") { P.status = "indisponible"; return renderPhone(); }
+  createPhonePeer();
+  // retour sur l'onglet (écran verrouillé, appli changée) : on vérifie la connexion
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && !(P.conn && P.conn.open)) retryPhone("retour"); });
 }
+function createPhonePeer() {
+  try { P.peer && P.peer.destroy(); } catch {}
+  let peerObj;
+  try { peerObj = new Peer({ debug: 0, ...(window.ECO_PEER_OPTS || {}) }); } catch (e) { P.err = "peer"; return failPhone(); }
+  P.peer = peerObj;
+  peerObj.on("open", () => { if (P.peer === peerObj) connectPhone(); });
+  peerObj.on("error", e => {
+    if (P.peer !== peerObj) return;
+    P.err = e.type || "erreur";
+    if (e.type === "peer-unavailable") { P.status = "salle introuvable"; P.fails++; renderPhone(); clearTimeout(P.openTimer); setTimeout(connectPhone, 3000); }
+    else failPhone();
+  });
+  peerObj.on("disconnected", () => { if (P.peer === peerObj && !(P.conn && P.conn.open)) failPhone(); });
+}
+function failPhone() {
+  P.fails++; P.status = "nouvel essai"; renderPhone();
+  clearTimeout(P.openTimer);
+  setTimeout(createPhonePeer, Math.min(8000, 1500 * P.fails));
+}
+function retryPhone(why) { P.err = why || ""; P.fails = 0; createPhonePeer(); }
 function connectPhone() {
   if (P.conn && P.conn.open) return;
+  if (!P.peer || P.peer.destroyed || P.peer.disconnected) return failPhone();
   P.status = "connexion"; renderPhone();
+  try { P.conn && P.conn.close(); } catch {}
   const conn = P.peer.connect(PEER_PREFIX + P.room.toLowerCase(), { reliable: true });
   P.conn = conn;
-  conn.on("open", () => { P.status = "connecté"; if (P.team != null) conn.send({ t: "join", team: P.team }); conn.send({ t: "hello" }); });
-  conn.on("data", v => { onView(v); });
-  conn.on("close", () => { P.status = "reconnexion"; renderPhone(); setTimeout(connectPhone, 2500); });
+  clearTimeout(P.openTimer);
+  P.openTimer = setTimeout(() => { if (P.conn === conn && !conn.open) { P.err = "délai dépassé"; try { conn.close(); } catch {} failPhone(); } }, 10000);
+  conn.on("open", () => { if (P.conn !== conn) return; clearTimeout(P.openTimer); P.fails = 0; P.err = ""; P.status = "connecté"; if (P.team != null) conn.send({ t: "join", team: P.team }); conn.send({ t: "hello" }); renderPhone(); });
+  conn.on("data", v => { if (P.conn === conn) onView(v); });
+  conn.on("close", () => { if (P.conn !== conn) return; P.status = "reconnexion"; renderPhone(); setTimeout(connectPhone, 2000); });
+  conn.on("error", () => {});
 }
 function send(msg) { if (P.conn && P.conn.open) try { P.conn.send(msg); } catch {} }
 function onView(v) {
@@ -1075,13 +1153,17 @@ function onView(v) {
   const prev = P.view;
   P.view = v;
   if (P.team != null && v.team == null) send({ t: "join", team: P.team });
-  if (v.q && (!prev || !prev.q || prev.q.qid !== v.q.qid)) { P.answered = v.q.mine; startLocalTimer(v.q.left); try { navigator.vibrate?.(120); } catch {} }
-  if (v.phase === "reveal" && prev && prev.phase !== "reveal") { try { navigator.vibrate?.(v.res && v.res.ok ? [60, 40, 60] : 200); } catch {} }
+  if (v.q && (!prev || !prev.q || prev.q.qid !== v.q.qid)) { P.answered = v.q.mine; startLocalTimer(v.q.left); sfx.question(); try { navigator.vibrate?.(120); } catch {} }
+  if (v.phase === "reveal" && prev && prev.phase !== "reveal") { v.res && v.res.ok ? sfx.good() : sfx.bad(); try { navigator.vibrate?.(v.res && v.res.ok ? [60, 40, 60] : 200); } catch {} }
+  if (prev && prev.phase !== v.phase && v.phase === "choose") sfx.page();
+  if (prev && prev.phase !== v.phase && v.phase === "event") sfx.event();
+  if (prev && prev.phase !== v.phase && v.phase === "end") v.won ? sfx.win() : sfx.event();
+  if (prev && prev.intro !== v.intro && v.intro != null) sfx.page();
   renderPhone();
 }
 function startLocalTimer(s) {
   clearInterval(P.timer); P.localLeft = s;
-  P.timer = setInterval(() => { P.localLeft = Math.max(0, P.localLeft - 1); const el = $("#phleft"); if (el) el.textContent = P.localLeft; if (!P.localLeft) clearInterval(P.timer); }, 1000);
+  P.timer = setInterval(() => { P.localLeft = Math.max(0, P.localLeft - 1); const el = $("#phleft"); if (el) el.textContent = P.localLeft; if (P.localLeft > 0 && P.localLeft <= 5 && P.answered == null) sfx.tick(); if (!P.localLeft) clearInterval(P.timer); }, 1000);
 }
 
 function renderPhone() {
@@ -1102,8 +1184,8 @@ function renderPhone() {
         : `<div class="intronav">${dots(introIdx)}<div class="row"><button class="btn white small" id="lskip">Passer</button><button class="btn ${last ? "green" : ""}" id="lnext">${last ? "CHOISIR MON ÉQUIPE" : "SUITE ▶"}</button></div></div>`}
     </div>`;
     mountIntro(introIdx);
-    $("#lnext")?.addEventListener("click", () => { if (last) P.introDone = true; else P.li++; renderPhone(); });
-    $("#lskip")?.addEventListener("click", () => { P.introDone = true; renderPhone(); });
+    $("#lnext")?.addEventListener("click", () => { initAudio(); sfx.page(); if (last) P.introDone = true; else P.li++; renderPhone(); });
+    $("#lskip")?.addEventListener("click", () => { initAudio(); sfx.page(); P.introDone = true; renderPhone(); });
     return;
   }
   P.shown = null;
@@ -1111,12 +1193,20 @@ function renderPhone() {
   const mascotSm = MASCOT.replace('class="mascot"', 'class="mascot sm"');
   let body = "";
   if (!v) {
-    const msg = P.status === "indisponible" ? "Connexion impossible depuis ce navigateur." : P.status === "salle introuvable" ? `Salle ${esc(P.room)} introuvable. Vérifie le code au tableau, nouvel essai…` : "Connexion à la salle…";
-    body = `<div class="talk">${mascotSm}<div class="bubble">${msg}</div></div>`;
+    const msg = P.status === "indisponible" ? "Ce navigateur ne permet pas de jouer. Ouvre le lien dans Chrome ou Safari." : P.status === "salle introuvable" ? `Je ne trouve pas la salle ${esc(P.room)}. Vérifie que le tableau affiche bien ce code. Nouvel essai…` : P.fails ? `Connexion difficile, nouvel essai (${P.fails})…` : "Connexion à la salle…";
+    body = `<div class="talk">${mascotSm}<div class="bubble">${msg}</div></div>
+      ${P.fails >= 2 || P.status === "indisponible" ? `<div class="ph-help">Ça bloque ? Essaie dans l'ordre :
+        <span>1. Ouvre le lien dans Chrome ou Safari (pas dans l'appli de l'appareil photo ou de scan).</span>
+        <span>2. Passe du wifi à la 4G, ou l'inverse.</span>
+        <span>3. Vérifie que le tableau affiche toujours le QR code.</span>
+        <button class="btn small" id="retry">Réessayer</button>
+        <small>Détail technique : ${esc(P.err || P.status)}</small></div>` : ""}`;
   } else if (P.team == null) {
     body = `<div class="talk">${mascotSm}<div class="bubble">Salut ! Quelle est ton équipe ?</div></div>
       <button class="btn white small" id="replay">▶ Revoir l'histoire</button>
       <div class="ph-pick">${v.teams.map((t, i) => `<button data-team="${i}" style="background:${t.color}"><span class="nmx">${esc(t.name)}<small>${t.phone ? "déjà un téléphone" : "libre"}</small></span></button>`).join("")}</div>`;
+  } else if (v.team == null && v.phase !== "lobby") {
+    body = `<div class="talk">${mascotSm}<div class="bubble">Je retrouve ton équipe…</div></div>`;
   } else {
     const t = v.teams[P.team] || { name: "?", color: "#777" };
     const head = `<div class="ph-team" style="background:${t.color}">${avatar(t.name, t.color)}<span>${esc(t.name)}</span><span class="sc">${v.me ? v.me.score + " PTS · " + v.me.rank + "E" : ""}</span></div>`;
@@ -1138,18 +1228,20 @@ function renderPhone() {
     else if (v.phase === "end") body = head + `<div class="talk">${mascotSm}<div class="bubble">${v.won ? "Écoville est sauvée, bravo !" : "Fin de la quête !"} Votre équipe termine ${v.me.rank}e avec ${v.me.score} points.</div></div>`;
   }
   app.innerHTML = `<div class="phone">
-    <div class="ph-head"><span class="logo">ÉCO<span class="v">VILLE</span></span><span class="ph-conn ${connCls}">SALLE ${esc(P.room)} · ${esc(P.status.toUpperCase())}</span></div>
-    ${body}
+    <div class="ph-head"><span class="logo">ÉCO<span class="v">VILLE</span></span><div class="row" style="gap:8px;flex-wrap:nowrap"><span class="ph-conn ${connCls}">${esc(P.status.toUpperCase())}</span><button class="iconbtn" id="phsound" style="width:40px;height:40px" aria-label="${soundOn ? "Couper le son" : "Activer le son"}">${soundOn ? SOUND_ON : SOUND_OFF}</button></div></div>
+    <div class="slidein" style="display:flex;flex-direction:column;gap:14px">${body}</div>
     <p class="ver" style="text-align:center;margin:8px 0 0">version ${APP_VERSION}${v && v.ver && v.ver !== APP_VERSION ? " · le tableau a la version " + esc(v.ver) + " : rechargez la page" : ""}</p></div>`;
   app.querySelectorAll(".ph-pick button[data-team]").forEach(b => b.addEventListener("click", () => {
-    P.team = +b.dataset.team; store.set("ecoville-phone", { room: P.room, team: P.team }); send({ t: "join", team: P.team }); renderPhone();
+    initAudio(); sfx.join(); P.team = +b.dataset.team; store.set("ecoville-phone", { room: P.room, team: P.team }); send({ t: "join", team: P.team }); renderPhone();
   }));
-  app.querySelectorAll(".ph-pick button[data-k]").forEach(b => b.addEventListener("click", () => send({ t: "pick", k: b.dataset.k })));
+  app.querySelectorAll(".ph-pick button[data-k]").forEach(b => b.addEventListener("click", () => { initAudio(); sfx.tap(); send({ t: "pick", k: b.dataset.k }); }));
   app.querySelectorAll(".ph-ans button").forEach(b => b.addEventListener("click", () => {
-    if (P.answered != null) return; P.answered = +b.dataset.a; send({ t: "ans", i: P.answered, qid: P.view.q.qid }); renderPhone();
+    if (P.answered != null) return; initAudio(); sfx.tap(); P.answered = +b.dataset.a; send({ t: "ans", i: P.answered, qid: P.view.q.qid }); renderPhone();
   }));
   $("#change")?.addEventListener("click", () => { P.team = null; store.set("ecoville-phone", null); renderPhone(); });
-  $("#replay")?.addEventListener("click", () => { P.introDone = false; P.li = 0; renderPhone(); });
+  $("#replay")?.addEventListener("click", () => { initAudio(); sfx.page(); P.introDone = false; P.li = 0; renderPhone(); });
+  $("#retry")?.addEventListener("click", () => { initAudio(); sfx.tap(); retryPhone("manuel"); });
+  $("#phsound")?.addEventListener("click", () => { soundOn = !soundOn; store.set("ecoville-sound", soundOn); initAudio(); if (soundOn) sfx.tap(); renderPhone(); });
 }
 
 // =====================================================================
@@ -1158,6 +1250,9 @@ function renderPhone() {
 const params = new URLSearchParams(location.search);
 const MODE = params.get("salle") ? "phone" : "host";
 checkVersion();
-if (MODE === "phone") startPhone(params.get("salle"));
+if (MODE === "phone") { document.querySelector(".bgclouds").hidden = true; startPhone(params.get("salle")); }
 else { render(); startHost(); }
 </script>
+
+</body>
+</html>
