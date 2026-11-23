@@ -253,6 +253,9 @@ select, input[type=text] { font: inherit; font-weight: 800; padding: 9px 10px; b
 .dots span { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--ink); background: #fff; }
 .dots span.on { background: var(--sun); transform: scale(1.2); }
 .ver { font-family: var(--comic); letter-spacing: 0.05em; font-size: 0.85rem; color: var(--muted); }
+.credit { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 1rem; background: #fff; border: 3px solid var(--ink); border-radius: 30px; padding: 4px 14px 4px 6px; box-shadow: 3px 3px 0 var(--ink); transform: rotate(-1.5deg); }
+.credit b { font-family: var(--comic); font-weight: 400; font-size: 1.25rem; letter-spacing: 0.05em; color: var(--red); }
+.credit .heart { width: 24px; height: 24px; flex: none; }
 .storybtn { display: flex; align-items: center; gap: 12px; }
 
 /* ---------- téléphone ---------- */
@@ -446,6 +449,8 @@ const SOUND_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-
 const SOUND_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="${I}"/><path d="M16 9l6 6M22 9l-6 6" stroke="${I}" stroke-width="2.2" stroke-linecap="round"/></svg>`;
 const MUSIC_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V5l11-2v12" fill="none" stroke="${I}" stroke-width="2.2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="${I}"/><circle cx="17.5" cy="15.5" r="2.8" fill="${I}"/></svg>`;
 const MUSIC_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V5l11-2v12" fill="none" stroke="${I}" stroke-width="2.2" stroke-linejoin="round" opacity=".35"/><circle cx="6.5" cy="17.5" r="2.8" fill="${I}" opacity=".35"/><circle cx="17.5" cy="15.5" r="2.8" fill="${I}" opacity=".35"/><path d="M3 3l18 18" stroke="${I}" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+const HEART = `<svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#ff6b9a" stroke="${I}" stroke-width="2.2" stroke-linejoin="round"/></svg>`;
+const CREDIT = `<span class="credit">${HEART}Un jeu créé par <b>LORINE PIRON</b></span>`;
 const BURST = c => `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${(() => { let d = ""; for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2, r = i % 2 ? 36 : 49; d += (i ? "L" : "M") + (50 + r * Math.cos(a)).toFixed(1) + " " + (50 + r * Math.sin(a)).toFixed(1); } return d + "z"; })()}" fill="${c}" stroke="${I}" stroke-width="3" stroke-linejoin="round"/></svg>`;
 
 // ---------- Quartiers / thèmes ----------
@@ -569,7 +574,7 @@ const PEER_PREFIX = "ecoville-qst-";
 const LETTERS = "ABCD";
 
 // ---------- version : l'écran et les téléphones doivent afficher la même ----------
-const APP_VERSION = "5";
+const APP_VERSION = "6";
 function checkVersion() {
   const base = location.pathname;
   fetch(base + "?_=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(txt => {
@@ -593,7 +598,7 @@ const INTRO = [
   { t: "VOTRE MISSION", v: "mission",
     x: "Votre classe devient la Brigade verte ! Chaque bonne réponse soigne un quartier. Si les six quartiers atteignent " + GOAL + " % avant la fin du jeu, toute la classe gagne." },
   { t: "COMMENT ON JOUE ?", v: "how",
-    x: "Ensemble pour sauver la ville, et en compétition pour les points : l'équipe qui en a le plus devient championne d'Écoville !" },
+    x: "Ensemble pour sauver la ville, et en compétition pour les points : l'équipe qui en a le plus devient championne d'Écoville !", credit: true },
 ];
 const HOW = [
   ["Une équipe choisit", "À chaque manche, une équipe choisit le quartier à soigner. Sa bonne réponse compte double."],
@@ -613,7 +618,7 @@ function introSlide(i) {
   const s = INTRO[i];
   return `<div class="intro">
     <div class="intro-vis">${introVisual(s)}</div>
-    <div class="panel intro-text"><span class="chap">CHAPITRE ${i + 1}</span><h2 class="ititle">${s.t}</h2><p class="itext" id="itext"></p></div>
+    <div class="panel intro-text"><span class="chap">CHAPITRE ${i + 1}</span><h2 class="ititle">${s.t}</h2><p class="itext" id="itext"></p>${s.credit ? `<div>${CREDIT}</div>` : ""}</div>
   </div>`;
 }
 let typeHandle = null;
@@ -932,7 +937,7 @@ function renderLobby() {
         <span class="joined ${teamHasPhone(i) ? "on" : ""}">${teamHasPhone(i) ? "PRÊTE !" : "…"}</span></div>`).join("");
   return `
   <header class="hero">
-    <div><span class="logo">ÉCO<span class="v">VILLE</span></span><div class="tagline">La quête écologique de toute la classe</div><span class="ver">version ${APP_VERSION}</span></div>
+    <div><span class="logo">ÉCO<span class="v">VILLE</span></span><div class="tagline">La quête écologique de toute la classe</div><div class="row" style="margin-top:10px">${CREDIT}<span class="ver">version ${APP_VERSION}</span></div></div>
     <div class="row" style="gap:14px"><button class="iconbtn" id="music" aria-label="${musicOn ? "Couper la musique" : "Activer la musique"}">${musicOn ? MUSIC_ON : MUSIC_OFF}</button><button class="iconbtn" id="sound" aria-label="${soundOn ? "Couper le son" : "Activer le son"}">${soundOn ? SOUND_ON : SOUND_OFF}</button></div>
   </header>
   <div class="talk">${MASCOT}<div class="bubble">Au secours ! Les six quartiers d'Écoville sont pollués. Répondez juste pour les soigner : si tous atteignent <b>${GOAL} %</b> avant la fin, toute la classe gagne !</div></div>
@@ -1020,7 +1025,7 @@ function renderGame() {
       <div class="talk">${MASCOT}<div class="bubble">${won ? "Merci ! Grâce à vous, Écoville respire à nouveau !" : `${G.districts.filter(d => d.h >= GOAL).length} quartier(s) sur 6 restauré(s). Encore un effort la prochaine fois !`}</div></div>
       <h2 style="color:${won ? "#7bd389" : "#ff8a70"}">${won ? "ÉCOVILLE EST SAUVÉE !" : "PRESQUE !"}</h2>
       <div class="podium">${ranked.map((r, n) => `<div class="team">${n === 0 ? `<span class="crown">CHAMPIONS</span>` : ""}${avatar(r.t.name, r.t.color)}<span class="nm">${n + 1}. ${esc(r.t.name)}</span><span class="sc">${r.t.score}</span><div class="sub">points</div></div>`).join("")}</div>
-      <div class="row"><button class="btn green big" id="again">REJOUER</button><button class="btn white" id="tolobby">Accueil</button></div></div>
+      <div class="row" style="justify-content:space-between"><div class="row"><button class="btn green big" id="again">REJOUER</button><button class="btn white" id="tolobby">Accueil</button></div>${CREDIT}</div></div>
       <div class="city">${G.districts.map(d => tile(d, false)).join("")}</div>`;
   }
   return `${topbar()}<section class="game"><div class="stage">${stage}</div>${teamsPanel()}</section>`;
@@ -1230,6 +1235,7 @@ function renderPhone() {
   app.innerHTML = `<div class="phone">
     <div class="ph-head"><span class="logo">ÉCO<span class="v">VILLE</span></span><div class="row" style="gap:8px;flex-wrap:nowrap"><span class="ph-conn ${connCls}">${esc(P.status.toUpperCase())}</span><button class="iconbtn" id="phsound" style="width:40px;height:40px" aria-label="${soundOn ? "Couper le son" : "Activer le son"}">${soundOn ? SOUND_ON : SOUND_OFF}</button></div></div>
     <div class="slidein" style="display:flex;flex-direction:column;gap:14px">${body}</div>
+    <div style="display:flex;justify-content:center;margin-top:10px">${CREDIT}</div>
     <p class="ver" style="text-align:center;margin:8px 0 0">version ${APP_VERSION}${v && v.ver && v.ver !== APP_VERSION ? " · le tableau a la version " + esc(v.ver) + " : rechargez la page" : ""}</p></div>`;
   app.querySelectorAll(".ph-pick button[data-team]").forEach(b => b.addEventListener("click", () => {
     initAudio(); sfx.join(); P.team = +b.dataset.team; store.set("ecoville-phone", { room: P.room, team: P.team }); send({ t: "join", team: P.team }); renderPhone();
