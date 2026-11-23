@@ -253,8 +253,10 @@ select, input[type=text] { font: inherit; font-weight: 800; padding: 9px 10px; b
 .dots span { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--ink); background: #fff; }
 .dots span.on { background: var(--sun); transform: scale(1.2); }
 .ver { font-family: var(--comic); letter-spacing: 0.05em; font-size: 0.85rem; color: var(--muted); }
-.credit { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 1rem; background: #fff; border: 3px solid var(--ink); border-radius: 30px; padding: 4px 14px 4px 6px; box-shadow: 3px 3px 0 var(--ink); transform: rotate(-1.5deg); }
+.credit { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 1rem; background: #fff; border: 3px solid var(--ink); border-radius: 30px; padding: 4px 14px 4px 6px; box-shadow: 3px 3px 0 var(--ink); transform: rotate(-1.5deg); }
 .credit b { font-family: var(--comic); font-weight: 400; font-size: 1.25rem; letter-spacing: 0.05em; color: var(--red); }
+.credit .lines { display: flex; flex-direction: column; line-height: 1.15; }
+.credit .lines span { font-family: var(--display); font-size: 1rem; }
 .credit .heart { width: 24px; height: 24px; flex: none; }
 .storybtn { display: flex; align-items: center; gap: 12px; }
 
@@ -287,7 +289,8 @@ select, input[type=text] { font: inherit; font-weight: 800; padding: 9px 10px; b
 .ph-ans button.sel { outline: 5px solid var(--sun); outline-offset: 2px; }
 .ph-ans button:disabled:not(.sel) { opacity: 0.3; filter: grayscale(1); }
 .ph-res { border: 3px solid var(--ink); border-radius: 18px; box-shadow: var(--shadow); padding: 22px 16px; text-align: center; }
-.ph-res.ok { background: #7bd389; } .ph-res.ko { background: #ff8a70; } .ph-res.none { background: #ddd; }
+.ph-res.ok { background: #7bd389; } .ph-res.ko { background: #ff8a70; animation: shake 0.12s linear 6; } .ph-res.none { background: #ddd; }
+.news:not(.good) .flash { animation: shake 0.12s linear 6; }
 .ph-res .big { font-family: var(--comic); font-size: 2.8rem; letter-spacing: 0.04em; line-height: 1; animation: pop 0.5s cubic-bezier(.2,1.6,.4,1) both; }
 .ph-conn { font-family: var(--comic); letter-spacing: 0.05em; font-size: 0.95rem; background: #fff; border: 2px solid var(--ink); border-radius: 8px; padding: 2px 8px; }
 .ph-conn.off { background: #ff8a70; }
@@ -450,7 +453,7 @@ const SOUND_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5
 const MUSIC_ON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V5l11-2v12" fill="none" stroke="${I}" stroke-width="2.2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.8" fill="${I}"/><circle cx="17.5" cy="15.5" r="2.8" fill="${I}"/></svg>`;
 const MUSIC_OFF = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V5l11-2v12" fill="none" stroke="${I}" stroke-width="2.2" stroke-linejoin="round" opacity=".35"/><circle cx="6.5" cy="17.5" r="2.8" fill="${I}" opacity=".35"/><circle cx="17.5" cy="15.5" r="2.8" fill="${I}" opacity=".35"/><path d="M3 3l18 18" stroke="${I}" stroke-width="2.4" stroke-linecap="round"/></svg>`;
 const HEART = `<svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#ff6b9a" stroke="${I}" stroke-width="2.2" stroke-linejoin="round"/></svg>`;
-const CREDIT = `<span class="credit">${HEART}Un jeu créé par <b>LORINE PIRON</b></span>`;
+const CREDIT = `<span class="credit">${HEART}<span class="lines"><span>Un jeu créé par <b>MADAME PIRON</b></span><span>avec l'aide de <b>CLAUDE CODE</b></span></span></span>`;
 const BURST = c => `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${(() => { let d = ""; for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2, r = i % 2 ? 36 : 49; d += (i ? "L" : "M") + (50 + r * Math.cos(a)).toFixed(1) + " " + (50 + r * Math.sin(a)).toFixed(1); } return d + "z"; })()}" fill="${c}" stroke="${I}" stroke-width="3" stroke-linejoin="round"/></svg>`;
 
 // ---------- Quartiers / thèmes ----------
@@ -693,7 +696,7 @@ const PEER_PREFIX = "ecoville-qst-";
 const LETTERS = "ABCD";
 
 // ---------- version : l'écran et les téléphones doivent afficher la même ----------
-const APP_VERSION = "7";
+const APP_VERSION = "8";
 function checkVersion() {
   const base = location.pathname;
   fetch(base + "?_=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(txt => {
@@ -813,6 +816,34 @@ function musicTick() {
 }
 function startMusic() { if (!musicTimer) musicTimer = setInterval(musicTick, 160); }
 function setMood(m) { musicMood = m; }
+// voix « waouh » / « ohhh » : son riche dont un filtre fait varier le timbre comme une voyelle
+function vowel(f0, f1, dur, formants, vol = 0.09, when = 0) {
+  if (!soundOn || !AC) return;
+  try {
+    const t = AC.currentTime + when, o = AC.createOscillator(), o2 = AC.createOscillator(), f = AC.createBiquadFilter(), gn = AC.createGain(), lfo = AC.createOscillator(), lg = AC.createGain();
+    o.type = "sawtooth"; o2.type = "sawtooth"; o2.detune.value = 12;
+    o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    o2.frequency.setValueAtTime(f0, t); o2.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    lfo.frequency.value = 6; lg.gain.value = f0 * 0.03; lfo.connect(lg); lg.connect(o.frequency); lg.connect(o2.frequency);
+    f.type = "bandpass"; f.Q.value = 4;
+    f.frequency.setValueAtTime(formants[0], t);
+    formants.slice(1).forEach((fr, i) => f.frequency.exponentialRampToValueAtTime(fr, t + dur * (i + 1) / (formants.length - 1)));
+    gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(vol, t + 0.06); gn.gain.setValueAtTime(vol, t + dur * 0.7); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(f); o2.connect(f); f.connect(gn).connect(AC.destination);
+    [o, o2, lfo].forEach(x => { x.start(t); x.stop(t + dur + 0.05); });
+  } catch {}
+}
+function slide(f0, f1, dur, type = "sawtooth", vol = 0.07, when = 0) {
+  if (!soundOn || !AC) return;
+  try {
+    const t = AC.currentTime + when, o = AC.createOscillator(), gn = AC.createGain(), lp = AC.createBiquadFilter();
+    o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    lp.type = "lowpass"; lp.frequency.value = 1800;
+    gn.gain.setValueAtTime(vol, t); gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp).connect(gn).connect(AC.destination); o.start(t); o.stop(t + dur + 0.05);
+  } catch {}
+}
+function chord(freqs, dur, when = 0, vol = 0.045) { freqs.forEach(f => { tone(f, dur, "square", when, vol); tone(f * 2, dur, "triangle", when, vol * 0.6); }); }
 const sfx = {
   page() { whoosh(0.3, 0.1); tone(880, 0.05, "triangle", 0.12, 0.03); },
   tap() { tone(740, 0.05, "square", 0, 0.04); },
@@ -822,10 +853,33 @@ const sfx = {
   start() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, "square", i * 0.1)); },
   pick() { tone(660, 0.08); tone(990, 0.12, "square", 0.08); },
   tick() { tone(880, 0.05, "triangle", 0, 0.06); },
-  good() { [523, 659, 784].forEach((f, i) => tone(f, 0.16, "square", i * 0.09)); tone(1047, 0.35, "square", 0.27); },
-  bad() { tone(220, 0.25, "sawtooth", 0, 0.04); tone(165, 0.35, "sawtooth", 0.2, 0.04); },
-  event() { tone(392, 0.15, "square", 0); tone(330, 0.15, "square", 0.16); tone(392, 0.3, "square", 0.32); },
-  win() { [523, 523, 523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.2, "square", i * 0.14)); },
+  // bonne réponse : envolée, arpège et accord final brillant
+  good() {
+    slide(300, 1400, 0.28, "triangle", 0.08);
+    [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.14, "square", 0.12 + i * 0.07, 0.06));
+    chord([523, 659, 784, 1047], 0.7, 0.42, 0.05);
+    [2093, 2637, 3136].forEach((f, i) => tone(f, 0.08, "triangle", 0.5 + i * 0.08, 0.04));
+  },
+  // mauvaise réponse : buzzer puis « wah wah wah waaah »
+  bad() {
+    tone(110, 0.4, "square", 0, 0.08); tone(116, 0.4, "square", 0, 0.06);
+    [[311, 294], [294, 277], [277, 262]].forEach(([a, b], i) => slide(a, b, 0.32, "sawtooth", 0.08, 0.45 + i * 0.36));
+    vowel(262, 220, 0.9, [900, 500, 350], 0.1, 1.53);
+  },
+  // bonne nouvelle : fanfare « ta-da-daaa » + « waouh ! »
+  goodNews() {
+    chord([392, 494, 587], 0.12, 0, 0.05); chord([392, 494, 587], 0.12, 0.15, 0.05); chord([523, 659, 784], 0.6, 0.3, 0.06);
+    vowel(220, 330, 0.75, [350, 1100, 700], 0.12, 0.35);
+    [1568, 2093, 2637, 3136].forEach((f, i) => tone(f, 0.08, "triangle", 0.8 + i * 0.06, 0.035));
+  },
+  // mauvaise nouvelle : « tin tin tiiin » dramatique et grondement
+  badNews() {
+    slide(196, 194, 0.3, "sawtooth", 0.09, 0); slide(185, 183, 0.3, "sawtooth", 0.09, 0.32); slide(147, 98, 1.1, "sawtooth", 0.1, 0.64);
+    vowel(110, 82, 1.0, [500, 400, 300], 0.08, 0.64);
+    whoosh(1.2, 0.06);
+  },
+  event() { this.badNews(); },
+  win() { chord([523, 659, 784], 0.15, 0); chord([523, 659, 784], 0.15, 0.18); chord([523, 659, 784], 0.15, 0.36); chord([698, 880, 1047], 0.5, 0.54, 0.06); chord([784, 988, 1175], 0.9, 1.1, 0.06); vowel(220, 330, 0.9, [350, 1100, 700], 0.12, 1.1); },
 };
 
 // =====================================================================
@@ -1006,14 +1060,14 @@ function afterReveal() {
     if (!G.eventDeck.length) G.eventDeck = shuffle(EVENTS);
     [ev.k, ev.k2].filter(Boolean).forEach(k => { const d = G.districts.find(x => x.k === k); d.h = Math.max(0, Math.min(100, d.h + ev.d)); });
     G.event = ev; G.phase = "event"; G.lastDelta = null;
-    sfx.event();
+    ev.good ? sfx.goodNews() : sfx.badNews();
     return render();
   }
   nextRound();
 }
 function endFx() {
   const won = G.districts.every(d => d.h >= GOAL);
-  if (won) sfx.win(); else sfx.event();
+  if (won) sfx.win(); else sfx.badNews();
   if (!won || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const colors = ["#ef4b4b", "#2f78e0", "#f5b51b", "#2fae62", "#ec5f9e", "#8a55c9"];
   $("#confetti").innerHTML = Array.from({ length: 80 }, () => `<i style="left:${Math.random() * 100}%;background:${colors[Math.floor(Math.random() * 6)]};animation-duration:${2.5 + Math.random() * 3}s;animation-delay:${Math.random() * 1.5}s"></i>`).join("");
@@ -1099,7 +1153,8 @@ function teamsPanel() {
     let state = "";
     if (q) state = t.ans != null ? `<span class="pill wait">A RÉPONDU</span>` : `<span class="pill">RÉFLÉCHIT…</span>`;
     if (G.phase === "reveal") state = t.ok == null ? `<span class="pill">PAS DE RÉPONSE</span>` : t.ok ? `<span class="pill ok">+${t.gain}</span>` : `<span class="pill ko">RATÉ</span>`;
-    const manual = q ? `<span class="manual" aria-label="Saisie manuelle">${G.cur.opts.map((_, k) => `<button class="k${k + 1} ${t.ans === k ? "sel" : ""}" data-team="${i}" data-a="${k}" aria-label="${esc(t.name)} répond ${LETTERS[k]}">${LETTERS[k]}</button>`).join("")}</span>` : "";
+    // le choix d'une équipe n'est jamais affiché au tableau pendant la question (seulement « a répondu »)
+    const manual = q && !teamHasPhone(i) ? `<span class="manual" aria-label="Saisie manuelle">${G.cur.opts.map((_, k) => `<button class="k${k + 1}" data-team="${i}" data-a="${k}" aria-label="${esc(t.name)} répond ${LETTERS[k]}">${LETTERS[k]}</button>`).join("")}</span>` : "";
     const isCh = i === G.chooser && G.phase !== "end";
     return `<div class="team ${isCh ? "chooser" : ""}">${isCh ? `<span class="crown">CHOISIT · ×2</span>` : ""}
       ${avatar(t.name, t.color)}<span class="nm">${esc(t.name)}</span><span class="sc">${t.score}</span>
@@ -1108,7 +1163,7 @@ function teamsPanel() {
   return `<aside class="side">
     <div class="panel"><div class="row" style="justify-content:space-between"><h2>ÉQUIPES</h2><span class="pill">SALLE ${esc(G.room)}</span></div>
       <div class="teams" style="margin-top:12px">${ranked.map(r => rows[r.i]).join("")}</div>
-      ${q ? `<p class="hint" style="margin-top:10px">Sans téléphone ? Cliquez la lettre annoncée par l'équipe.</p>` : ""}
+      ${q ? `<p class="hint" style="margin-top:10px">Sans téléphone ? Cliquez la lettre annoncée par l'équipe. Les choix restent cachés jusqu'à la correction.</p>` : ""}
     </div>
     <div class="row"><button class="btn white small" id="quit">Arrêter la partie</button></div>
   </aside>`;
@@ -1289,10 +1344,10 @@ function onView(v) {
   P.view = v;
   if (P.team != null && v.team == null) send({ t: "join", team: P.team });
   if (v.q && (!prev || !prev.q || prev.q.qid !== v.q.qid)) { P.answered = v.q.mine; startLocalTimer(v.q.left); sfx.question(); try { navigator.vibrate?.(120); } catch {} }
-  if (v.phase === "reveal" && prev && prev.phase !== "reveal") { v.res && v.res.ok ? sfx.good() : sfx.bad(); try { navigator.vibrate?.(v.res && v.res.ok ? [60, 40, 60] : 200); } catch {} }
+  if (v.phase === "reveal" && prev && prev.phase !== "reveal") { v.res && v.res.ok ? sfx.good() : sfx.bad(); try { navigator.vibrate?.(v.res && v.res.ok ? [60, 40, 60, 40, 120] : [300, 80, 300]); } catch {} }
   if (prev && prev.phase !== v.phase && v.phase === "choose") sfx.page();
-  if (prev && prev.phase !== v.phase && v.phase === "event") sfx.event();
-  if (prev && prev.phase !== v.phase && v.phase === "end") v.won ? sfx.win() : sfx.event();
+  if (prev && prev.phase !== v.phase && v.phase === "event") v.event && v.event.good ? sfx.goodNews() : sfx.badNews();
+  if (prev && prev.phase !== v.phase && v.phase === "end") v.won ? sfx.win() : sfx.badNews();
   if (prev && prev.intro !== v.intro && v.intro != null) sfx.page();
   renderPhone();
 }
