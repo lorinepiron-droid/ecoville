@@ -1,0 +1,746 @@
+<title>Écoville</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@600;700&display=swap">
+<style>
+/* Layout: écran de classe = carte de 6 quartiers (gauche) + tableau des équipes (droite) ; téléphone = une manette plein écran par équipe */
+:root {
+  --bg: #eef4ee;
+  --surface: #ffffff;
+  --ink: #16301f;
+  --muted: #587063;
+  --line: #cfdcd2;
+  --accent: #23784a;
+  --accent-ink: #ffffff;
+  --healthy: #2f8a4e;
+  --polluted: #7c7064;
+  --good: #1f8a4c;
+  --bad: #c2412d;
+  --warn: #c98a12;
+  --c-dech: #2e8b57; --c-plast: #1d7fb0; --c-tel: #8a55c9; --c-ia: #c9457f; --c-mode: #d9692a; --c-alim: #a8860c;
+  --a1: #d64545; --a2: #2d6fd1; --a3: #c99410; --a4: #2f9a5a;
+  --display: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1a14; --surface: #16261d; --ink: #e4f0e7; --muted: #95ad9e; --line: #2a4235;
+  --accent: #4cc283; --accent-ink: #0b1a12; --healthy: #2f8a4e; --polluted: #5e554c;
+  --good: #4cc283; --bad: #f06b55; --warn: #e6ad3a; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #0e1a14; --surface: #16261d; --ink: #e4f0e7; --muted: #95ad9e; --line: #2a4235;
+  --accent: #4cc283; --accent-ink: #0b1a12; --healthy: #2f8a4e; --polluted: #5e554c;
+  --good: #4cc283; --bad: #f06b55; --warn: #e6ad3a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 32px;
+}
+button { font: inherit; cursor: pointer; color: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.1; text-wrap: balance; }
+.tag { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 12px; padding: 12px 22px; font-family: var(--display); font-weight: 600; font-size: 1.1rem; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+.btn.small { padding: 7px 14px; font-size: 0.95rem; }
+.panel { background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 18px; min-width: 0; }
+.wrap { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* ---------- barre du haut ---------- */
+.topbar { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 700; color: var(--accent); }
+.planet { display: flex; align-items: center; gap: 12px; flex: 1 1 280px; max-width: 520px; }
+.gauge { flex: 1; height: 18px; border-radius: 9px; background: var(--line); overflow: hidden; }
+.gauge div { height: 100%; background: linear-gradient(90deg, var(--warn), var(--healthy)); border-radius: 9px; transition: width 0.8s ease; }
+.gauge-val { font-family: var(--mono); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: right; }
+.roundinfo { font-family: var(--mono); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---------- accueil ---------- */
+.lobby { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+.join { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 20px; align-items: center; }
+.qr { background: #fff; border-radius: 14px; padding: 8px; width: 100%; max-width: 260px; aspect-ratio: 1; display: grid; place-items: center; }
+.qr svg { width: 100%; height: auto; display: block; }
+.code { font-family: var(--mono); font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; letter-spacing: 0.12em; color: var(--accent); line-height: 1; }
+.url { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); overflow-wrap: anywhere; }
+.netnote { border-radius: 12px; padding: 12px 14px; background: color-mix(in srgb, var(--warn) 16%, var(--surface)); font-size: 0.95rem; }
+.form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-weight: 700; font-size: 0.9rem; }
+select, input[type=text] { font: inherit; padding: 9px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; min-width: 0; }
+.teamlist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.teamedit { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.dot { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+.joined { font-family: var(--mono); font-size: 0.7rem; flex: none; padding: 2px 6px; border-radius: 6px; background: var(--bg); color: var(--muted); }
+.joined.on { background: var(--good); color: #fff; }
+.howto { margin: 10px 0 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
+
+/* ---------- jeu ---------- */
+.game { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+.stage { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.prompt { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-family: var(--display); font-size: clamp(1.2rem, 2.4vw, 1.7rem); font-weight: 600; }
+.city { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.district { position: relative; border: 0; text-align: left; border-radius: 18px; padding: 16px; color: #fff; min-height: 150px; display: flex; flex-direction: column; gap: 10px; justify-content: space-between; overflow: hidden; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.district .band { position: absolute; inset: 0 0 auto 0; height: 7px; }
+.district .head { display: flex; gap: 10px; align-items: center; }
+.district svg.ic { width: 34px; height: 34px; flex: none; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.district h3 { font-size: clamp(1.05rem, 1.8vw, 1.35rem); font-weight: 600; }
+.district .theme { font-size: 0.85rem; opacity: 0.9; }
+.hbar { height: 10px; border-radius: 5px; background: rgba(0,0,0,0.25); overflow: hidden; }
+.hbar div { height: 100%; background: #fff; border-radius: 5px; transition: width 0.8s ease; }
+.hrow { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.8rem; font-weight: 700; }
+button.district:not(:disabled):hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+button.district:disabled { cursor: default; }
+.district.chosen { box-shadow: 0 0 0 4px var(--bg), 0 0 0 8px var(--ink); }
+.district .delta { position: absolute; right: 12px; top: 14px; font-family: var(--mono); font-weight: 700; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 8px; }
+
+.qcard { border-top: 12px solid var(--dom, var(--accent)); display: flex; flex-direction: column; gap: 16px; }
+.qhead { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+.qdom { font-family: var(--display); font-weight: 600; color: var(--dom); font-size: 1.1rem; }
+.qtext { font-family: var(--display); font-weight: 600; font-size: clamp(1.4rem, 3.2vw, 2.3rem); line-height: 1.2; margin: 0; text-wrap: balance; }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.opt { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 14px; background: var(--bg); border: 3px solid transparent; font-size: clamp(1rem, 1.8vw, 1.3rem); min-width: 0; }
+.opt .k { width: 2em; height: 2em; border-radius: 10px; display: grid; place-items: center; color: #fff; font-family: var(--display); font-weight: 700; flex: none; }
+.opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 15%, var(--surface)); }
+.opt.dim { opacity: 0.45; }
+.k1 { background: var(--a1); } .k2 { background: var(--a2); } .k3 { background: var(--a3); } .k4 { background: var(--a4); }
+.timer { display: flex; align-items: center; gap: 12px; }
+.timer .gauge div { background: var(--dom); transition: width 0.3s linear; }
+.timer .gauge-val { min-width: 2.5em; }
+.expl { border-radius: 12px; padding: 14px 16px; background: var(--bg); font-size: 1.05rem; }
+.expl b { font-family: var(--display); }
+
+.side { display: flex; flex-direction: column; gap: 12px; }
+.teams { display: flex; flex-direction: column; gap: 8px; }
+.team { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 10px; border-radius: 12px; border: 2px solid transparent; }
+.team.chooser { border-color: var(--ink); }
+.team .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team .sc { font-family: var(--mono); font-weight: 700; font-variant-numeric: tabular-nums; }
+.team .sub { grid-column: 2 / 4; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+.pill { font-family: var(--mono); font-size: 0.72rem; padding: 2px 7px; border-radius: 6px; background: var(--bg); color: var(--muted); font-weight: 700; }
+.pill.ok { background: var(--good); color: #fff; } .pill.ko { background: var(--bad); color: #fff; } .pill.wait { background: var(--accent); color: var(--accent-ink); }
+.manual { display: flex; gap: 4px; }
+.manual button { width: 28px; height: 26px; border-radius: 6px; border: 0; color: #fff; font-family: var(--display); font-weight: 700; font-size: 0.85rem; opacity: 0.35; }
+.manual button.sel { opacity: 1; box-shadow: 0 0 0 2px var(--ink); }
+.eventcard { border-top: 12px solid var(--warn); }
+.eventcard.good { border-top-color: var(--good); }
+.eventcard h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); }
+.eventcard p { font-size: 1.15rem; max-width: 60ch; }
+.podium { display: flex; flex-direction: column; gap: 8px; }
+.podium .team { font-size: 1.15rem; }
+.end h2 { font-size: clamp(2rem, 5vw, 3.2rem); }
+
+/* ---------- téléphone ---------- */
+.phone { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.ph-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ph-team { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; color: #fff; font-family: var(--display); font-weight: 600; font-size: 1.3rem; }
+.ph-team .sc { margin-left: auto; font-family: var(--mono); font-size: 1rem; }
+.ph-big { font-family: var(--display); font-weight: 600; font-size: 1.5rem; line-height: 1.2; text-align: center; padding: 24px 8px; }
+.ph-sub { text-align: center; color: var(--muted); }
+.ph-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ph-pick button { border: 0; border-radius: 14px; padding: 18px 12px; color: #fff; font-family: var(--display); font-weight: 600; font-size: 1.1rem; text-align: left; display: flex; flex-direction: column; gap: 4px; }
+.ph-pick button small { font-family: var(--body); font-weight: 400; font-size: 0.8rem; opacity: 0.9; }
+.ph-pick button:disabled { opacity: 0.35; }
+.ph-q { font-family: var(--display); font-weight: 600; font-size: 1.2rem; line-height: 1.25; }
+.ph-ans { display: grid; gap: 10px; }
+.ph-ans button { border: 0; border-radius: 14px; padding: 16px; color: #fff; font-size: 1.1rem; font-weight: 700; text-align: left; display: flex; gap: 12px; align-items: center; min-height: 64px; }
+.ph-ans button .k { font-family: var(--display); font-size: 1.4rem; width: 1.4em; flex: none; }
+.ph-ans button.sel { box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--ink); }
+.ph-ans button:disabled:not(.sel) { opacity: 0.35; }
+.ph-res { border-radius: 16px; padding: 22px 16px; text-align: center; color: #fff; }
+.ph-res.ok { background: var(--good); } .ph-res.ko { background: var(--bad); } .ph-res.none { background: var(--polluted); }
+.ph-res .big { font-family: var(--display); font-size: 2rem; font-weight: 700; }
+.ph-conn { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+.ph-conn.off { color: var(--bad); }
+.ph-codein { display: flex; gap: 8px; }
+.ph-codein input { font-family: var(--mono); font-size: 1.6rem; text-transform: uppercase; letter-spacing: 0.15em; text-align: center; }
+
+@media (max-width: 1000px) {
+  .game, .lobby { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .city { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .opts { grid-template-columns: minmax(0, 1fr); }
+  .join { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .form { grid-template-columns: minmax(0, 1fr); }
+  .teamlist { grid-template-columns: minmax(0, 1fr); }
+  .district { min-height: 120px; padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+// =====================================================================
+//  ÉCOVILLE — quête écologique de classe
+//  Écran : la carte de la ville. Téléphones : une manette par équipe.
+//  Connexion téléphone ↔ écran en pair-à-pair (PeerJS / WebRTC).
+// =====================================================================
+
+// ---------- Quartiers / thèmes ----------
+const DISTRICTS = [
+  { k: "dech",  name: "Le Recyparc",          theme: "Déchets & tri",  color: "var(--c-dech)",
+    icon: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>' },
+  { k: "plast", name: "Le Port",              theme: "Plastique",      color: "var(--c-plast)",
+    icon: '<path d="M10 2h4v3l2 3v13H8V8l2-3z"/><path d="M8 12h8M8 16h8"/>' },
+  { k: "tel",   name: "L'École",              theme: "Smartphones",    color: "var(--c-tel)",
+    icon: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>' },
+  { k: "ia",    name: "La Tour numérique",    theme: "IA & numérique", color: "var(--c-ia)",
+    icon: '<rect x="7" y="7" width="10" height="10" rx="1"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>' },
+  { k: "mode",  name: "Le Centre commercial", theme: "Fast fashion",   color: "var(--c-mode)",
+    icon: '<path d="M8 3 3 6l2 4 3-1v12h8V9l3 1 2-4-5-3c-1 2-2 3-4 3S9 5 8 3z"/>' },
+  { k: "alim",  name: "Le Marché",            theme: "Alimentation",   color: "var(--c-alim)",
+    icon: '<path d="M12 7c-3-2-8-1-8 5s4 9 6 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 6-3 6-9s-5-7-8-5z"/><path d="M12 7c0-2 1-4 3-5"/>' },
+];
+const DMAP = Object.fromEntries(DISTRICTS.map(d => [d.k, d]));
+
+// =====================================================================
+//  BANQUE DE QUESTIONS
+//  k = quartier · l = degré minimum (1 = 1re-2e, 2 = 3e-4e, 3 = 5e-6e)
+//  t = "qcm" (a[0] = bonne réponse), "vf" (v = true/false) ou "tri" (a[0] = bonne poubelle)
+//  e = explication affichée à la correction
+//  Les règles de tri suivent le système belge (sac PMC bleu, papier-carton, bulles à verre).
+// =====================================================================
+const Q = [
+  // ----- Déchets & tri -----
+  {k:"dech",l:1,t:"tri",q:"Une canette de soda vide. Où va-t-elle ?",a:["Sac PMC","Bulle à verre","Papier-carton","Ordures ménagères"],e:"Les canettes sont en métal : c'est le M de PMC (Plastiques, Métaux, Cartons à boissons)."},
+  {k:"dech",l:1,t:"tri",q:"Une brique de lait vide. Où va-t-elle ?",a:["Sac PMC","Papier-carton","Déchets organiques","Ordures ménagères"],e:"C'est un carton à boissons, le C de PMC. Il contient aussi du plastique et de l'aluminium, d'où un recyclage à part."},
+  {k:"dech",l:1,t:"tri",q:"Une pelure de banane. Où va-t-elle ?",a:["Déchets organiques / compost","Sac PMC","Ordures ménagères","Papier-carton"],e:"Elle se décompose en quelques semaines et devient du compost qui nourrit le sol."},
+  {k:"dech",l:1,t:"tri",q:"Une pile usagée. Où va-t-elle ?",a:["Boîte de collecte des piles","Sac PMC","Ordures ménagères","Bulle à verre"],e:"Les piles contiennent des métaux toxiques. On les dépose dans une boîte Bebat (magasins, écoles) ou au recyparc."},
+  {k:"dech",l:1,t:"tri",q:"Un bocal de confiture en verre vide, sans son couvercle. Où va-t-il ?",a:["Bulle à verre","Sac PMC","Ordures ménagères","Papier-carton"],e:"Le bocal va dans la bulle à verre, et son couvercle métallique dans le sac PMC."},
+  {k:"dech",l:1,t:"qcm",q:"Dans la règle des 3R, quel geste est le plus efficace ?",a:["Réduire","Réutiliser","Recycler","Ils se valent tous"],e:"Le meilleur déchet est celui qu'on ne produit pas. Recycler demande encore de l'énergie et du transport."},
+  {k:"dech",l:1,t:"qcm",q:"Que signifie le P de PMC ?",a:["Plastiques","Papiers","Piles","Produits chimiques"],e:"PMC = Plastiques, Métaux et Cartons à boissons."},
+  {k:"dech",l:2,t:"vf",q:"Un verre à boire cassé va dans la bulle à verre.",v:false,e:"Seuls les bouteilles et bocaux vont dans la bulle. Vaisselle, miroirs, vitres et pyrex fondent à une autre température et gâchent le recyclage."},
+  {k:"dech",l:2,t:"tri",q:"Un mouchoir en papier utilisé. Où va-t-il ?",a:["Ordures ménagères","Papier-carton","Sac PMC","Bulle à verre"],e:"Sale, il ne peut pas être recyclé avec le papier. Certaines communes l'acceptent aussi dans les déchets organiques."},
+  {k:"dech",l:2,t:"qcm",q:"Combien de déchets ménagers un habitant de Belgique produit-il environ par an ?",a:["Environ 400 kg","Environ 40 kg","Environ 4 kg","Environ 4 tonnes"],e:"Plus d'un kilo par jour et par personne. Le zéro déchet vise à réduire ce chiffre."},
+  {k:"dech",l:3,t:"qcm",q:"En Belgique, que devient surtout le contenu du sac d'ordures ménagères ?",a:["Il est brûlé dans un incinérateur qui récupère de l'énergie","Il est enfoui dans une décharge","Il est trié à la main puis recyclé","Il est envoyé en Asie"],e:"L'incinération produit de l'électricité et de la chaleur, mais aussi du CO₂ et des cendres. Mieux vaut trier et réduire."},
+  {k:"dech",l:3,t:"qcm",q:"Pourquoi composter réduit-il les gaz à effet de serre par rapport à une décharge ?",a:["Avec de l'oxygène, les déchets se décomposent sans produire beaucoup de méthane","Le compost absorbe le CO₂ de l'air","Le compost refroidit la Terre","Le compost détruit le plastique"],e:"Dans une décharge, sans oxygène, les déchets organiques produisent du méthane, un gaz à effet de serre puissant."},
+
+  // ----- Plastique -----
+  {k:"plast",l:1,t:"qcm",q:"Combien de temps une bouteille en plastique peut-elle rester dans la nature ?",a:["Plusieurs centaines d'années","Un mois","Un an","Dix ans"],e:"On l'estime souvent à environ 450 ans. Et elle ne disparaît pas vraiment : elle se fragmente en microplastiques."},
+  {k:"plast",l:1,t:"qcm",q:"À partir de quoi fabrique-t-on la plupart des plastiques ?",a:["Du pétrole et du gaz","Du sable","Du bois","Du sel"],e:"Le plastique est donc lié aux énergies fossiles, du puits de pétrole jusqu'à l'incinérateur."},
+  {k:"plast",l:1,t:"vf",q:"Le plastique jeté dans l'océan finit par disparaître complètement.",v:false,e:"Il se casse en morceaux de plus en plus petits (microplastiques) que les animaux avalent."},
+  {k:"plast",l:1,t:"qcm",q:"Où trouve-t-on des microplastiques ?",a:["Partout : océans, sols, air et même dans le corps humain","Seulement dans les océans","Seulement dans les poubelles","Nulle part, c'est une légende"],e:"On en a trouvé dans le sang humain, dans la neige de l'Everest et dans les fosses océaniques."},
+  {k:"plast",l:1,t:"qcm",q:"Quelle est la meilleure alternative à la bouteille d'eau jetable ?",a:["Une gourde remplie au robinet","Une bouteille plus petite","Une canette","Une bouteille « biodégradable »"],e:"En Belgique, l'eau du robinet est potable, contrôlée et des centaines de fois moins chère."},
+  {k:"plast",l:2,t:"qcm",q:"Quelle part du plastique jeté dans le monde est recyclée ?",a:["Environ 9 %","Environ 50 %","Environ 75 %","Presque tout"],e:"Selon l'OCDE, le reste est brûlé, enfoui ou rejeté dans la nature."},
+  {k:"plast",l:2,t:"qcm",q:"Qu'appelle-t-on un microplastique ?",a:["Un morceau de plastique de moins de 5 mm","Un plastique fabriqué avec des plantes","Une bouteille recyclée","Un plastique sans pétrole"],e:"Ils viennent des déchets qui se fragmentent, mais aussi des pneus, des vêtements synthétiques et de certains cosmétiques."},
+  {k:"plast",l:2,t:"qcm",q:"Le « continent de plastique » du Pacifique, c'est…",a:["Une zone où les courants concentrent des fragments de plastique","Une île solide sur laquelle on peut marcher","Une usine de recyclage flottante","Un volcan sous-marin"],e:"C'est surtout une soupe de petits fragments, souvent invisibles depuis un bateau, ce qui la rend très difficile à nettoyer."},
+  {k:"plast",l:3,t:"qcm",q:"Combien de plastique l'humanité produit-elle environ chaque année ?",a:["Plus de 400 millions de tonnes","Environ 4 millions de tonnes","Environ 40 000 tonnes","Environ 40 milliards de tonnes"],e:"La production a été multipliée par plus de 200 depuis 1950 (OCDE)."},
+  {k:"plast",l:3,t:"qcm",q:"Un plastique « biosourcé » est…",a:["Fabriqué au moins en partie à partir de plantes","Forcément biodégradable dans la mer","Sans danger pour les animaux","Recyclable à l'infini"],e:"Biosourcé ne veut pas dire biodégradable : certains se comportent exactement comme du plastique classique."},
+  {k:"plast",l:3,t:"qcm",q:"Pourquoi ne peut-on pas recycler le plastique à l'infini ?",a:["Il se dégrade à chaque cycle et les types de plastique sont mélangés","Il est trop lourd à transporter","C'est interdit par la loi","Il devient radioactif"],e:"Les chaînes de polymères se raccourcissent. On fabrique souvent un produit de moindre qualité : on parle de décyclage."},
+
+  // ----- Smartphones -----
+  {k:"tel",l:1,t:"qcm",q:"Quelle étape pèse le plus dans l'impact d'un smartphone sur le climat ?",a:["Sa fabrication","Sa recharge","L'envoi de SMS","Son emballage"],e:"Environ trois quarts de son empreinte carbone viennent de la fabrication : extraction des métaux, usines, transport."},
+  {k:"tel",l:1,t:"qcm",q:"Quel est le geste le plus écologique pour ton téléphone ?",a:["Le garder le plus longtemps possible","En changer chaque année","Le recharger toute la nuit","Le mettre en mode avion"],e:"Une coque, une protection d'écran et une batterie remplacée peuvent prolonger sa vie de plusieurs années."},
+  {k:"tel",l:1,t:"qcm",q:"Où rapporter un vieux téléphone dont tu ne veux plus ?",a:["Dans un point de collecte ou un magasin (réparation, reprise, recyclage)","À la poubelle","Dans le sac PMC","Dans la bulle à verre"],e:"En Belgique, Recupel organise la collecte des appareils électriques. Un téléphone qui marche peut aussi être donné ou revendu."},
+  {k:"tel",l:1,t:"vf",q:"Garder son téléphone 4 ans au lieu de 2 réduit fortement son impact par année d'utilisation.",v:true,e:"Comme la fabrication pèse le plus, on la « répartit » sur deux fois plus d'années : l'impact par an baisse presque de moitié."},
+  {k:"tel",l:2,t:"qcm",q:"Combien d'éléments chimiques différents trouve-t-on environ dans un smartphone ?",a:["Plusieurs dizaines","2 ou 3","Une dizaine","Plus de 500"],e:"Or, cuivre, cobalt, lithium, terres rares… Plus de 500 est impossible : il n'existe que 118 éléments !"},
+  {k:"tel",l:2,t:"qcm",q:"D'où vient environ 70 % du cobalt mondial, utilisé dans les batteries ?",a:["De la République démocratique du Congo","De Belgique","D'Islande","Du Canada"],e:"Son extraction pose de graves problèmes humains et environnementaux, dont le travail d'enfants dans certaines mines."},
+  {k:"tel",l:2,t:"vf",q:"Un vieux téléphone qui dort dans un tiroir a encore de la valeur.",v:true,e:"Il peut être reconditionné, ou ses métaux (or, argent, cuivre) peuvent être récupérés. Dans un tiroir, il ne sert à rien."},
+  {k:"tel",l:2,t:"qcm",q:"Un téléphone « reconditionné », c'est…",a:["Un appareil d'occasion vérifié et remis en état","Un téléphone neuf dans un nouvel emballage","Une contrefaçon","Un téléphone fondu puis refait"],e:"Il évite de fabriquer un nouvel appareil et coûte souvent beaucoup moins cher."},
+  {k:"tel",l:3,t:"qcm",q:"Combien de déchets électroniques le monde a-t-il produit en 2022 ?",a:["Environ 62 millions de tonnes","Environ 62 000 tonnes","Environ 6 milliards de tonnes","Environ 620 tonnes"],e:"Selon l'ONU, seulement environ 22 % ont été collectés et recyclés correctement."},
+  {k:"tel",l:3,t:"qcm",q:"Qu'appelle-t-on l'obsolescence logicielle ?",a:["Un appareil qui devient inutilisable car il ne reçoit plus de mises à jour","Un téléphone qui devient plus rapide avec le temps","Un logiciel gratuit","Une application écologique"],e:"Le matériel fonctionne encore, mais les applications ne suivent plus. L'Union européenne impose désormais des années minimales de mises à jour."},
+
+  // ----- IA & numérique -----
+  {k:"ia",l:1,t:"qcm",q:"Où « vivent » les intelligences artificielles comme les chatbots ?",a:["Dans d'immenses centres de données remplis de serveurs","Uniquement dans ton téléphone","Dans les nuages du ciel","Dans les satellites"],e:"Le « cloud », ce sont des bâtiments bien réels, pleins d'ordinateurs allumés jour et nuit."},
+  {k:"ia",l:1,t:"qcm",q:"De quoi les centres de données ont-ils besoin en grande quantité ?",a:["D'électricité, et souvent d'eau pour se refroidir","De sable","De papier","De pétrole brut"],e:"Les serveurs chauffent beaucoup. Leur refroidissement peut consommer énormément d'eau."},
+  {k:"ia",l:1,t:"vf",q:"Le numérique n'a aucun impact sur l'environnement, car il est « virtuel ».",v:false,e:"Appareils, réseaux et centres de données consomment des métaux, de l'énergie et de l'eau."},
+  {k:"ia",l:2,t:"vf",q:"Une question posée à un chatbot d'IA consomme en général plus d'énergie qu'une recherche web classique.",v:true,e:"Les estimations varient, mais générer une réponse demande beaucoup plus de calcul. Pas besoin d'une IA pour savoir l'heure !"},
+  {k:"ia",l:2,t:"qcm",q:"Quelle activité représente la plus grande part du trafic internet ?",a:["La vidéo en ligne","Les e-mails","Les SMS","Les sites de météo"],e:"Streaming, vidéos courtes, jeux en ligne… Plus de la moitié des données qui circulent sont des vidéos."},
+  {k:"ia",l:2,t:"qcm",q:"Pourquoi entraîner un grand modèle d'IA consomme-t-il beaucoup d'énergie ?",a:["Des milliers de processeurs calculent pendant des semaines","L'IA doit lire des livres en papier","Des robots doivent marcher","Les écrans restent allumés"],e:"Et une fois entraîné, chaque utilisation consomme encore de l'énergie, multipliée par des millions d'utilisateurs."},
+  {k:"ia",l:2,t:"qcm",q:"Quel geste réduit l'impact de ton usage du numérique ?",a:["Baisser la qualité vidéo quand la HD n'est pas utile","Laisser la lecture automatique activée","Garder 50 onglets ouverts","Envoyer toutes ses vidéos en 4K"],e:"Moins de données transférées, c'est moins d'énergie dans les réseaux et les serveurs."},
+  {k:"ia",l:3,t:"qcm",q:"Quelle part de l'électricité mondiale les centres de données consommaient-ils en 2024 ?",a:["Environ 1,5 %","Environ 50 %","Environ 25 %","Moins de 0,001 %"],e:"Ça paraît peu, mais c'est autant qu'un pays comme la France ou le Royaume-Uni, et ça augmente vite (Agence internationale de l'énergie)."},
+  {k:"ia",l:3,t:"qcm",q:"D'ici 2030, selon l'Agence internationale de l'énergie, la consommation électrique des centres de données pourrait…",a:["Environ doubler","Baisser de moitié","Rester stable","Être multipliée par 100"],e:"L'essor de l'IA est l'une des principales raisons de cette hausse."},
+  {k:"ia",l:3,t:"qcm",q:"L'IA peut aussi aider l'écologie. Par exemple…",a:["Prévoir la production solaire et éolienne pour mieux gérer le réseau électrique","Supprimer le besoin de recycler","Fabriquer de l'eau potable à partir de rien","Rendre le plastique biodégradable"],e:"Elle sert aussi à suivre la déforestation par satellite. Tout dépend de l'usage qu'on en fait."},
+
+  // ----- Fast fashion -----
+  {k:"mode",l:1,t:"qcm",q:"Combien d'eau faut-il environ pour fabriquer un jean ?",a:["Environ 7 500 litres","Environ 7,5 litres","Environ 75 litres","Environ 750 000 litres"],e:"Surtout pour cultiver le coton. C'est à peu près ce qu'une personne boit en 7 ans (chiffre du PNUE)."},
+  {k:"mode",l:1,t:"qcm",q:"Qu'est-ce que la fast fashion ?",a:["Des vêtements produits très vite, en masse et à bas prix, avec des collections sans cesse renouvelées","Des vêtements pour faire du sport","Des vêtements livrés en 24 h","Des vêtements en coton bio"],e:"Certaines marques sortent des milliers de nouveaux modèles chaque semaine."},
+  {k:"mode",l:1,t:"qcm",q:"Le polyester, très utilisé dans les vêtements, est…",a:["Un plastique fabriqué à partir de pétrole","Une fibre naturelle","Une sorte de coton","De la laine"],e:"Plus de la moitié des fibres textiles produites dans le monde sont du polyester."},
+  {k:"mode",l:1,t:"qcm",q:"Quel geste est le plus écologique pour s'habiller ?",a:["Acheter en seconde main ou échanger","Acheter un tee-shirt neuf chaque semaine","Jeter un vêtement dès qu'il a une tache","Commander plusieurs tailles et renvoyer le reste"],e:"Le vêtement le plus écologique est celui qui existe déjà. Friperies, vide-dressings et réparation comptent aussi."},
+  {k:"mode",l:2,t:"qcm",q:"Que libèrent les vêtements synthétiques à chaque lavage ?",a:["Des microfibres de plastique","De l'eau potable","De l'oxygène","Rien du tout"],e:"Elles passent à travers les stations d'épuration et finissent dans les rivières et les océans."},
+  {k:"mode",l:2,t:"qcm",q:"En 2013, l'effondrement du Rana Plaza au Bangladesh a tué plus de 1 100 personnes. Que fabriquaient-elles ?",a:["Des vêtements","Des téléphones","Des jouets","Des voitures"],e:"Ce drame a révélé les conditions de travail dangereuses derrière les vêtements bon marché."},
+  {k:"mode",l:2,t:"qcm",q:"Pourquoi le coton conventionnel pose-t-il problème ?",a:["Il demande beaucoup d'eau et de pesticides","Il est fait de plastique","Il pousse trop vite","Il ne se lave pas"],e:"La mer d'Aral, en Asie centrale, a presque disparu en partie à cause de l'irrigation du coton."},
+  {k:"mode",l:2,t:"qcm",q:"Entre 2000 et 2014, la production mondiale de vêtements a environ…",a:["Doublé","Diminué","Stagné","Été divisée par dix"],e:"Dans le même temps, on garde chaque vêtement beaucoup moins longtemps."},
+  {k:"mode",l:3,t:"qcm",q:"Selon l'ONU (PNUE), l'industrie de la mode représente environ quelle part des émissions mondiales de gaz à effet de serre ?",a:["Entre 2 et 8 %","Moins de 0,1 %","Environ 50 %","Plus de 80 %"],e:"C'est autant ou plus que les vols internationaux et le transport maritime réunis, selon les estimations."},
+  {k:"mode",l:3,t:"vf",q:"Une partie des vêtements donnés en Europe est exportée et finit parfois dans des décharges en Afrique ou au Chili.",v:true,e:"Au Ghana ou dans le désert d'Atacama, des montagnes de vêtements invendables s'accumulent. Donner ne remplace pas acheter moins."},
+
+  // ----- Alimentation -----
+  {k:"alim",l:1,t:"qcm",q:"Quel aliment émet le plus de gaz à effet de serre par kilo produit ?",a:["Le bœuf","Les lentilles","Les pommes","Les pommes de terre"],e:"Un kilo de bœuf émet des dizaines de fois plus que la même quantité de légumineuses."},
+  {k:"alim",l:1,t:"qcm",q:"En Belgique, en hiver, quels légumes et fruits sont de saison ?",a:["Poireaux, choux et pommes","Fraises","Tomates","Mangues"],e:"Manger de saison évite les serres chauffées et les longs transports."},
+  {k:"alim",l:1,t:"vf",q:"Environ un tiers de la nourriture produite dans le monde est perdue ou gaspillée.",v:true,e:"Dans les champs, les transports, les magasins et chez nous (FAO). Les restes peuvent souvent être cuisinés."},
+  {k:"alim",l:1,t:"qcm",q:"Quel gaz à effet de serre est produit par la digestion des vaches ?",a:["Le méthane","L'hélium","Le dioxygène","La vapeur de sel"],e:"Les ruminants rejettent du méthane en rotant, ce qui pèse lourd dans l'impact de la viande et du lait."},
+  {k:"alim",l:2,t:"qcm",q:"Pourquoi une tomate belge achetée en hiver peut-elle polluer plus qu'une tomate espagnole ?",a:["Elle pousse souvent dans une serre chauffée","Elle voyage plus loin","Elle est plus grosse","Elle est emballée dans du verre"],e:"Le chauffage des serres consomme beaucoup d'énergie. Le plus simple : manger les tomates en été."},
+  {k:"alim",l:2,t:"qcm",q:"Quel moyen de transport des marchandises émet le plus de CO₂ par kilo et par kilomètre ?",a:["L'avion","Le bateau","Le train","La péniche"],e:"Les fruits fragiles venus de loin (certaines mangues, des asperges hors saison) voyagent parfois en avion."},
+  {k:"alim",l:2,t:"qcm",q:"Quelle mention permet encore de manger un produit après la date indiquée ?",a:["« À consommer de préférence avant le »","« À consommer jusqu'au »","Les deux","Aucune"],e:"Après cette date, le goût peut changer, mais le produit reste souvent bon. « Jusqu'au » concerne la sécurité : on la respecte."},
+  {k:"alim",l:3,t:"qcm",q:"Sur 100 ans, le méthane réchauffe environ combien de fois plus que la même masse de CO₂ ?",a:["Environ 30 fois","Environ 2 fois","Environ 1 000 fois","Moins que le CO₂"],e:"Le GIEC donne environ 27 à 30 fois. Mais il reste moins longtemps dans l'atmosphère que le CO₂."},
+  {k:"alim",l:3,t:"qcm",q:"Pour réduire l'empreinte carbone de son alimentation, quel geste pèse le plus ?",a:["Manger moins de viande rouge","Choisir des sacs en papier","Boire de l'eau en bouteille","Ne manger que des surgelés"],e:"Ce que l'on mange compte plus que la distance parcourue, sauf pour les produits venus en avion."},
+];
+
+const EVENTS = [
+  { title: "Black Friday", text: "Les promotions s'enchaînent et les achats explosent au Centre commercial.", k: "mode", d: -15 },
+  { title: "Tempête sur la côte", text: "Le vent emporte des déchets vers la mer. Le Port est touché.", k: "plast", d: -15 },
+  { title: "Sortie d'un nouveau smartphone", text: "Tout le monde veut le dernier modèle. Les vieux téléphones s'entassent à l'École.", k: "tel", d: -15 },
+  { title: "Canicule", text: "Les centres de données surchauffent et consomment énormément d'eau pour se refroidir.", k: "ia", d: -15 },
+  { title: "Gaspillage à la cantine", text: "Des kilos de repas finissent à la poubelle. Le Marché en souffre.", k: "alim", d: -15 },
+  { title: "Un Repair Café ouvre", text: "Des bénévoles réparent téléphones et vêtements gratuitement.", k: "tel", d: +10, k2: "mode", good: true },
+  { title: "Marché de producteurs locaux", text: "Les habitants découvrent les légumes de saison cultivés près de chez eux.", k: "alim", d: +15, good: true },
+  { title: "Journée de ramassage", text: "La classe organise un grand nettoyage des berges et du quartier.", k: "plast", d: +10, k2: "dech", good: true },
+  { title: "Déchets sauvages", text: "Des sacs abandonnés le long de la route : le Recyparc est débordé.", k: "dech", d: -15 },
+];
+
+const TEAM_PRESETS = [
+  { name: "Les Abeilles", color: "#d64545" },
+  { name: "Les Loutres", color: "#2d6fd1" },
+  { name: "Les Lombrics", color: "#c58a00" },
+  { name: "Les Coraux", color: "#e0679c" },
+  { name: "Les Lichens", color: "#2f9a5a" },
+  { name: "Les Séquoias", color: "#7d52c7" },
+];
+const YEARS = ["1re", "2e", "3e", "4e", "5e", "6e"];
+const degreeOf = y => (y <= 2 ? 1 : y <= 4 ? 2 : 3);
+const START_HEALTH = 20, GOAL = 80;
+const PEER_PREFIX = "ecoville-qst-";
+const LETTERS = "ABCD";
+
+// ---------- utilitaires ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const newRoom = () => Array.from({ length: 4 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ"[Math.floor(Math.random() * 24)]).join("");
+const healthLabel = h => (h >= GOAL ? "Restauré" : h >= 50 ? "En convalescence" : "Pollué");
+const districtBg = h => `color-mix(in srgb, var(--healthy) ${Math.round(h)}%, var(--polluted))`;
+const svgIcon = d => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${d.icon}</svg>`;
+
+// =====================================================================
+//  MODE ÉCRAN (hôte)
+// =====================================================================
+const saved = store.get("ecoville-setup") || {};
+const G = {
+  room: saved.room || newRoom(),
+  year: saved.year || 3, nTeams: saved.nTeams || 6, rounds: saved.rounds || 18, timer: saved.timer || 30,
+  names: saved.names || TEAM_PRESETS.map(t => t.name),
+  phase: "lobby", teams: [], districts: [], round: 0, chooser: 0, cur: null, used: [], event: null, lastDelta: null,
+};
+let net = "connecting"; // connecting | on | off
+let peer = null;
+const conns = new Map(); // peerId -> { conn, team }
+let tickHandle = null;
+
+function saveSetup() { store.set("ecoville-setup", { room: G.room, year: G.year, nTeams: G.nTeams, rounds: G.rounds, timer: G.timer, names: G.names }); }
+function phoneUrl() { return location.href.split("#")[0].split("?")[0] + "?salle=" + G.room; }
+
+function startHost() {
+  if (typeof Peer === "undefined" || typeof RTCPeerConnection === "undefined") { net = "off"; return; }
+  let p;
+  try { p = new Peer(PEER_PREFIX + G.room.toLowerCase(), { debug: 0 }); } catch { net = "off"; return; }
+  peer = p;
+  const failTimer = setTimeout(() => { if (net !== "on") { net = "off"; render(); } }, 12000);
+  p.on("open", () => { clearTimeout(failTimer); net = "on"; render(); });
+  p.on("connection", conn => {
+    conn.on("open", () => { conns.set(conn.peer, { conn, team: null }); sendView(conn.peer); });
+    conn.on("data", d => onPhone(conn.peer, d));
+    conn.on("close", () => { conns.delete(conn.peer); render(); });
+    conn.on("error", () => {});
+  });
+  p.on("disconnected", () => { try { p.reconnect(); } catch {} });
+  p.on("error", e => {
+    if (e.type === "unavailable-id") { clearTimeout(failTimer); p.destroy(); G.room = newRoom(); saveSetup(); startHost(); render(); }
+    else if (["browser-incompatible", "network", "server-error", "socket-error", "ssl-unavailable"].includes(e.type) && net !== "on") { clearTimeout(failTimer); net = "off"; render(); }
+  });
+}
+
+function teamHasPhone(i) { for (const c of conns.values()) if (c.team === i) return true; return false; }
+
+function onPhone(pid, d) {
+  const c = conns.get(pid); if (!c || !d || typeof d !== "object") return;
+  if (d.t === "join" && Number.isInteger(d.team) && d.team >= 0 && d.team < G.nTeams) { c.team = d.team; render(); }
+  else if (d.t === "pick" && G.phase === "choose" && c.team === G.chooser && DMAP[d.k]) chooseDistrict(d.k);
+  else if (d.t === "ans" && G.phase === "question" && c.team != null && Number.isInteger(d.i) && d.qid === G.cur.qid) setAnswer(c.team, d.i, false);
+  else if (d.t === "hello") sendView(pid);
+}
+
+function viewFor(team) {
+  const v = { phase: G.phase, round: G.round, rounds: G.rounds, room: G.room,
+    teams: (G.phase === "lobby" ? G.names.slice(0, G.nTeams) : G.teams.map(t => t.name)).map((n, i) => ({ name: n, color: TEAM_PRESETS[i].color, phone: teamHasPhone(i) })) };
+  if (team == null || team >= G.nTeams) return v;
+  v.team = team;
+  if (G.phase !== "lobby") {
+    const t = G.teams[team];
+    const ranked = G.teams.map((x, i) => ({ s: x.score, i })).sort((a, b) => b.s - a.s);
+    v.me = { score: t.score, rank: ranked.findIndex(r => r.i === team) + 1 };
+    v.chooserName = G.teams[G.chooser]?.name; v.isChooser = G.chooser === team;
+  }
+  if (G.phase === "choose") v.districts = G.districts.map(d => ({ k: d.k, name: d.name, theme: d.theme, h: Math.round(d.h) }));
+  if (G.phase === "question" || G.phase === "reveal") {
+    const c = G.cur;
+    v.q = { qid: c.qid, text: c.text, opts: c.opts, theme: DMAP[c.k].theme, district: DMAP[c.k].name,
+      left: Math.max(0, Math.ceil((c.endsAt - Date.now()) / 1000)), mine: G.teams[team].ans };
+  }
+  if (G.phase === "reveal") { const t = G.teams[team]; v.res = { ok: t.ok, gain: t.gain, correct: G.cur.opts[G.cur.correct], expl: G.cur.e }; }
+  if (G.phase === "event") v.event = G.event;
+  if (G.phase === "end") v.won = G.districts.every(d => d.h >= GOAL);
+  return v;
+}
+function sendView(pid) { const c = conns.get(pid); if (c && c.conn.open) { try { c.conn.send(viewFor(c.team)); } catch {} } }
+function broadcast() { for (const pid of conns.keys()) sendView(pid); }
+
+// ---------- déroulement ----------
+function startGame() {
+  saveSetup();
+  G.teams = G.names.slice(0, G.nTeams).map((n, i) => ({ name: (n || "").trim() || TEAM_PRESETS[i].name, color: TEAM_PRESETS[i].color, score: 0, ans: null, at: 0, ok: null, gain: 0 }));
+  G.districts = DISTRICTS.map(d => ({ ...d, h: START_HEALTH }));
+  G.round = 0; G.used = []; G.event = null; G.lastDelta = null;
+  G.eventDeck = shuffle(EVENTS);
+  nextRound();
+}
+function nextRound() {
+  G.round++; G.chooser = (G.round - 1) % G.nTeams; G.phase = "choose"; G.cur = null; G.lastDelta = null;
+  render();
+}
+function pickQuestion(k) {
+  const deg = degreeOf(G.year);
+  const fits = q => q.k === k && q.l <= deg;
+  let pool = Q.map((q, i) => ({ q, i })).filter(o => fits(o.q) && !G.used.includes(o.i));
+  if (!pool.length) { G.used = G.used.filter(i => !fits(Q[i])); pool = Q.map((q, i) => ({ q, i })).filter(o => fits(o.q)); }
+  // priorité aux questions du degré de la classe
+  const exact = pool.filter(o => o.q.l === deg);
+  const src = exact.length && Math.random() < 0.7 ? exact : pool;
+  const o = src[Math.floor(Math.random() * src.length)];
+  G.used.push(o.i);
+  return o.q;
+}
+function chooseDistrict(k) {
+  const q = pickQuestion(k);
+  let opts, correct;
+  if (q.t === "vf") { opts = ["Vrai", "Faux"]; correct = q.v ? 0 : 1; }
+  else { const order = shuffle(q.a.map((_, i) => i)); opts = order.map(i => q.a[i]); correct = order.indexOf(0); }
+  G.cur = { k, qid: Math.random().toString(36).slice(2, 8), text: q.q, opts, correct, e: q.e, type: q.t, start: Date.now(), endsAt: Date.now() + G.timer * 1000 };
+  G.teams.forEach(t => { t.ans = null; t.at = 0; t.ok = null; t.gain = 0; });
+  G.phase = "question";
+  clearInterval(tickHandle);
+  tickHandle = setInterval(tick, 250);
+  render();
+}
+function tick() {
+  if (G.phase !== "question") { clearInterval(tickHandle); return; }
+  const left = G.cur.endsAt - Date.now();
+  const tv = $("#tleft"), tb = $("#tbar");
+  if (tv) tv.textContent = Math.max(0, Math.ceil(left / 1000)) + " s";
+  if (tb) tb.style.width = Math.max(0, 100 * left / (G.timer * 1000)) + "%";
+  if (left <= 0) reveal();
+}
+function setAnswer(team, i, manual) {
+  if (G.phase !== "question" || i < 0 || i >= G.cur.opts.length) return;
+  const t = G.teams[team];
+  if (t.ans != null && !manual) return; // la première réponse du téléphone compte
+  t.ans = i; t.at = Date.now();
+  if (G.teams.every(x => x.ans != null)) { setTimeout(() => { if (G.phase === "question") reveal(); }, 600); }
+  render();
+}
+function reveal() {
+  clearInterval(tickHandle);
+  const c = G.cur, d = G.districts.find(x => x.k === c.k);
+  const per = 960 / (G.nTeams * G.rounds); // calibré : ~50 % de bonnes réponses bien réparties suffisent
+  let nOk = 0;
+  G.teams.forEach((t, i) => {
+    if (t.ans == null) { t.ok = null; t.gain = 0; return; }
+    t.ok = t.ans === c.correct;
+    if (t.ok) {
+      nOk++;
+      const speed = Math.max(0, Math.min(1, (c.endsAt - t.at) / (G.timer * 1000)));
+      t.gain = (100 + Math.round(50 * speed)) * (i === G.chooser ? 2 : 1);
+      t.score += t.gain;
+    } else t.gain = 0;
+  });
+  const before = d.h;
+  d.h = Math.min(100, d.h + nOk * per);
+  G.lastDelta = { k: c.k, d: Math.round(d.h - before), nOk };
+  G.phase = "reveal";
+  render();
+}
+function afterReveal() {
+  if (G.round >= G.rounds) { G.phase = "end"; return render(); }
+  if (G.round % 4 === 0) {
+    const ev = G.eventDeck.shift() || shuffle(EVENTS)[0];
+    if (!G.eventDeck.length) G.eventDeck = shuffle(EVENTS);
+    [ev.k, ev.k2].filter(Boolean).forEach(k => { const d = G.districts.find(x => x.k === k); d.h = Math.max(0, Math.min(100, d.h + ev.d)); });
+    G.event = ev; G.phase = "event";
+    return render();
+  }
+  nextRound();
+}
+
+// ---------- rendu écran ----------
+function planetHealth() { return G.districts.length ? G.districts.reduce((s, d) => s + d.h, 0) / G.districts.length : START_HEALTH; }
+
+function topbar() {
+  const h = Math.round(planetHealth());
+  return `<header class="topbar">
+    <div class="brand"><h1>Écoville</h1><span class="tag">Quête écologique de classe · ${YEARS[G.year - 1]} secondaire</span></div>
+    ${G.phase !== "lobby" ? `<div class="planet"><span class="tag">Santé de la ville</span><div class="gauge" role="meter" aria-valuenow="${h}" aria-valuemin="0" aria-valuemax="100"><div style="width:${h}%"></div></div><span class="gauge-val">${h} %</span></div>
+    <span class="roundinfo">Manche ${G.round}/${G.rounds}</span>` : ""}
+  </header>`;
+}
+
+function renderLobby() {
+  const url = phoneUrl();
+  const joinBlock = net === "on" ? `
+      <div class="join">
+        <div class="qr" id="qr" aria-label="QR code pour rejoindre la partie"></div>
+        <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <span class="tag">Code de la salle</span>
+          <span class="code">${esc(G.room)}</span>
+          <span class="url">${esc(url)}</span>
+          <ol class="howto"><li>Un téléphone par équipe scanne le QR code.</li><li>Chaque groupe choisit son équipe.</li><li>Les questions s'affichent ici et sur les téléphones.</li></ol>
+        </div>
+      </div>` : net === "connecting" ? `<p class="netnote">Ouverture de la salle pour les téléphones…</p>` : `
+      <div class="netnote"><b>Téléphones indisponibles ici.</b> Cette page n'arrive pas à ouvrir de salle en ligne (le réseau ou l'hébergement bloque la connexion). Vous pouvez quand même jouer : chaque groupe annonce sa réponse et l'enseignant la saisit à l'écran.</div>`;
+  const teamRows = G.names.slice(0, G.nTeams).map((n, i) => `
+      <div class="teamedit"><span class="dot" style="background:${TEAM_PRESETS[i].color}"></span>
+        <input type="text" id="tn${i}" data-i="${i}" value="${esc(n)}" maxlength="22" aria-label="Nom de l'équipe ${i + 1}">
+        <span class="joined ${teamHasPhone(i) ? "on" : ""}">${teamHasPhone(i) ? "connectée" : "—"}</span></div>`).join("");
+  return `${topbar()}
+  <section class="lobby">
+    <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+      <h2>Rejoindre la partie</h2>
+      ${joinBlock}
+    </div>
+    <div class="panel">
+      <h2>La mission</h2>
+      <p style="margin:8px 0 0">Les six quartiers d'Écoville sont pollués. À chaque manche, une équipe choisit un quartier et <b>toutes les équipes</b> répondent à la question. Chaque bonne réponse fait des points pour l'équipe et soigne le quartier. Objectif commun : <b>tous les quartiers à ${GOAL} %</b> avant la dernière manche.</p>
+      <div class="form">
+        <div class="field"><label for="year">Classe</label><select id="year">${YEARS.map((y, i) => `<option value="${i + 1}" ${G.year === i + 1 ? "selected" : ""}>${y} secondaire</option>`).join("")}</select></div>
+        <div class="field"><label for="nteams">Équipes</label><select id="nteams">${[2, 3, 4, 5, 6].map(n => `<option ${G.nTeams === n ? "selected" : ""}>${n}</option>`).join("")}</select></div>
+        <div class="field"><label for="rounds">Durée</label><select id="rounds">${[[12, "12 manches · ~25 min"], [18, "18 manches · ~40 min"], [24, "24 manches · ~50 min"]].map(([v, l]) => `<option value="${v}" ${G.rounds === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+        <div class="field"><label for="timer">Temps par question</label><select id="timer">${[20, 30, 45, 60].map(v => `<option value="${v}" ${G.timer === v ? "selected" : ""}>${v} secondes</option>`).join("")}</select></div>
+      </div>
+      <div class="teamlist">${teamRows}</div>
+      <div class="row" style="margin-top:16px"><button class="btn" id="start">Lancer la quête</button>
+        <span class="tag">${Q.length} questions · 6 thèmes</span></div>
+    </div>
+  </section>`;
+}
+
+function districtTile(d, clickable) {
+  const delta = G.lastDelta && G.lastDelta.k === d.k && G.lastDelta.d ? `<span class="delta">+${G.lastDelta.d} %</span>` : "";
+  const chosen = G.cur && G.cur.k === d.k && G.phase === "reveal" ? "chosen" : "";
+  const tagName = clickable ? "button" : "div";
+  return `<${tagName} class="district ${chosen}" ${clickable ? `data-k="${d.k}"` : ""} style="background:${districtBg(d.h)}" aria-label="${esc(d.name)}, ${esc(d.theme)}, santé ${Math.round(d.h)} %">
+    <span class="band" style="background:${d.color}"></span>${delta}
+    <div class="head">${svgIcon(d)}<div><h3>${esc(d.name)}</h3><div class="theme">${esc(d.theme)}</div></div></div>
+    <div><div class="hrow"><span>${healthLabel(d.h)}</span><span>${Math.round(d.h)} %</span></div>
+    <div class="hbar"><div style="width:${d.h}%"></div></div></div>
+  </${tagName}>`;
+}
+
+function teamsPanel() {
+  const ranked = G.teams.map((t, i) => ({ t, i })).sort((a, b) => b.t.score - a.t.score);
+  const q = G.phase === "question";
+  const rows = G.teams.map((t, i) => {
+    let state = "";
+    if (q) state = t.ans != null ? `<span class="pill wait">a répondu</span>` : `<span class="pill">réfléchit…</span>`;
+    if (G.phase === "reveal") state = t.ok == null ? `<span class="pill">pas de réponse</span>` : t.ok ? `<span class="pill ok">+${t.gain}</span>` : `<span class="pill ko">raté</span>`;
+    const manual = q ? `<span class="manual" aria-label="Saisie manuelle">${G.cur.opts.map((_, k) => `<button class="k${k + 1} ${t.ans === k ? "sel" : ""}" data-team="${i}" data-a="${k}" aria-label="${esc(t.name)} répond ${LETTERS[k]}">${LETTERS[k]}</button>`).join("")}</span>` : "";
+    return `<div class="team ${i === G.chooser && G.phase !== "end" ? "chooser" : ""}">
+      <span class="dot" style="background:${t.color}"></span><span class="nm">${esc(t.name)}</span><span class="sc">${t.score}</span>
+      <div class="sub">${teamHasPhone(i) ? "téléphone ✓" : "sans téléphone"} ${i === G.chooser && G.phase !== "end" ? "· choisit ×2" : ""} ${state} ${manual}</div></div>`;
+  });
+  const order = ranked.map(r => rows[r.i]).join("");
+  return `<aside class="side">
+    <div class="panel"><div class="row" style="justify-content:space-between"><h2>Équipes</h2><span class="tag">salle ${esc(G.room)}</span></div>
+      <div class="teams" style="margin-top:10px">${order}</div>
+      ${q ? `<p class="tag" style="margin:10px 0 0;text-transform:none;letter-spacing:0">Sans téléphone ? Cliquez la lettre annoncée par l'équipe.</p>` : ""}
+    </div>
+    <div class="row"><button class="btn ghost small" id="quit">Arrêter la partie</button></div>
+  </aside>`;
+}
+
+function questionCard() {
+  const c = G.cur, d = DMAP[c.k], rev = G.phase === "reveal";
+  const left = Math.max(0, Math.ceil((c.endsAt - Date.now()) / 1000));
+  const typeLbl = c.type === "tri" ? "Tri des déchets" : c.type === "vf" ? "Vrai ou faux" : "Question";
+  return `<div class="panel qcard" style="--dom:${d.color}">
+    <div class="qhead"><span class="qdom">${esc(d.name)} · ${esc(d.theme)}</span><span class="tag">${typeLbl} · manche ${G.round}</span></div>
+    <p class="qtext">${esc(c.text)}</p>
+    ${!rev ? `<div class="timer"><div class="gauge"><div id="tbar" style="width:${100 * left / G.timer}%"></div></div><span class="gauge-val" id="tleft">${left} s</span></div>` : ""}
+    <div class="opts">${c.opts.map((o, k) => `<div class="opt ${rev ? (k === c.correct ? "right" : "dim") : ""}"><span class="k k${k + 1}">${LETTERS[k]}</span><span>${esc(o)}</span></div>`).join("")}</div>
+    ${rev ? `<div class="expl"><b>${G.lastDelta.nOk} équipe${G.lastDelta.nOk > 1 ? "s" : ""} sur ${G.nTeams} ${G.lastDelta.nOk > 1 ? "ont" : "a"} trouvé.</b> ${esc(c.e)}</div>
+      <div class="row"><button class="btn" id="next">${G.round >= G.rounds ? "Voir le résultat final" : "Manche suivante"}</button></div>`
+      : `<div class="row"><button class="btn ghost small" id="revealnow">Corriger maintenant</button></div>`}
+  </div>`;
+}
+
+function renderGame() {
+  let stage = "";
+  const chooser = G.teams[G.chooser];
+  if (G.phase === "choose") {
+    stage = `<div class="prompt"><span class="dot" style="background:${chooser.color};width:24px;height:24px"></span><span>${esc(chooser.name)} choisit le quartier à soigner</span></div>
+      <p class="tag" style="margin:-8px 0 0;text-transform:none;letter-spacing:0">${teamHasPhone(G.chooser) ? "Choix sur leur téléphone, ou cliquez ici." : "Cliquez sur le quartier annoncé par l'équipe."} Leur bonne réponse comptera double.</p>
+      <div class="city">${G.districts.map(d => districtTile(d, true)).join("")}</div>`;
+  } else if (G.phase === "question") {
+    stage = questionCard();
+  } else if (G.phase === "reveal") {
+    stage = questionCard() + `<div class="city">${G.districts.map(d => districtTile(d, false)).join("")}</div>`;
+  } else if (G.phase === "event") {
+    const ev = G.event, names = [ev.k, ev.k2].filter(Boolean).map(k => DMAP[k].name).join(" et ");
+    stage = `<div class="panel eventcard ${ev.good ? "good" : ""}" style="display:flex;flex-direction:column;gap:12px">
+      <span class="tag">Événement à Écoville</span><h2>${esc(ev.title)}</h2><p style="margin:0">${esc(ev.text)}</p>
+      <p style="margin:0"><b>${esc(names)} : ${ev.d > 0 ? "+" : ""}${ev.d} %</b></p>
+      <div class="row"><button class="btn" id="evnext">Continuer</button></div></div>
+      <div class="city">${G.districts.map(d => districtTile(d, false)).join("")}</div>`;
+  } else if (G.phase === "end") {
+    const won = G.districts.every(d => d.h >= GOAL);
+    const ranked = G.teams.map((t, i) => ({ t, i })).sort((a, b) => b.t.score - a.t.score);
+    stage = `<div class="panel end" style="display:flex;flex-direction:column;gap:14px">
+      <span class="tag">Fin de la quête</span>
+      <h2 style="color:${won ? "var(--good)" : "var(--bad)"}">${won ? "Écoville est sauvée !" : "Écoville n'est pas encore sauvée"}</h2>
+      <p style="margin:0;font-size:1.1rem">${won ? "Tous les quartiers ont atteint " + GOAL + " %. Bravo à toute la classe !" : `${G.districts.filter(d => d.h >= GOAL).length} quartier(s) sur 6 restauré(s). Il fallait atteindre ${GOAL} % partout.`}</p>
+      <div class="podium">${ranked.map((r, n) => `<div class="team"><span class="dot" style="background:${r.t.color}"></span><span class="nm">${n + 1}. ${esc(r.t.name)}</span><span class="sc">${r.t.score} pts</span></div>`).join("")}</div>
+      <div class="row"><button class="btn" id="again">Rejouer</button><button class="btn ghost" id="tolobby">Retour à l'accueil</button></div></div>
+      <div class="city">${G.districts.map(d => districtTile(d, false)).join("")}</div>`;
+  }
+  return `${topbar()}<section class="game"><div class="stage">${stage}</div>${teamsPanel()}</section>`;
+}
+
+let confirmQuit = false;
+function render() {
+  if (MODE !== "host") return;
+  const app = $("#app");
+  // conserver la saisie en cours d'un nom d'équipe
+  const focused = document.activeElement && document.activeElement.id;
+  app.innerHTML = G.phase === "lobby" ? renderLobby() : renderGame();
+  if (focused && $("#" + focused) && focused.startsWith("tn")) { const el = $("#" + focused); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  if (G.phase === "lobby") {
+    const qrEl = $("#qr");
+    if (qrEl && typeof qrcode !== "undefined") { const qr = qrcode(0, "M"); qr.addData(phoneUrl()); qr.make(); qrEl.innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); }
+    ["year", "nteams", "rounds", "timer"].forEach(id => $("#" + id).addEventListener("change", e => {
+      const v = +e.target.value; ({ year: () => G.year = v, nteams: () => G.nTeams = v, rounds: () => G.rounds = v, timer: () => G.timer = v })[id]();
+      saveSetup(); render(); broadcast();
+    }));
+    app.querySelectorAll("[id^=tn]").forEach(el => el.addEventListener("input", e => { G.names[+e.target.dataset.i] = e.target.value; saveSetup(); }));
+    app.querySelectorAll("[id^=tn]").forEach(el => el.addEventListener("change", () => broadcast()));
+    $("#start").addEventListener("click", startGame);
+  } else {
+    app.querySelectorAll("button.district[data-k]").forEach(b => b.addEventListener("click", () => chooseDistrict(b.dataset.k)));
+    app.querySelectorAll(".manual button").forEach(b => b.addEventListener("click", () => setAnswer(+b.dataset.team, +b.dataset.a, true)));
+    $("#next")?.addEventListener("click", afterReveal);
+    $("#evnext")?.addEventListener("click", nextRound);
+    $("#revealnow")?.addEventListener("click", reveal);
+    $("#again")?.addEventListener("click", startGame);
+    $("#tolobby")?.addEventListener("click", () => { G.phase = "lobby"; render(); broadcast(); });
+    const quit = $("#quit");
+    if (quit) {
+      if (confirmQuit) { quit.textContent = "Confirmer l'arrêt ?"; quit.style.borderColor = "var(--bad)"; }
+      quit.addEventListener("click", () => {
+        if (!confirmQuit) { confirmQuit = true; render(); setTimeout(() => { confirmQuit = false; if (G.phase !== "lobby") render(); }, 4000); return; }
+        confirmQuit = false; clearInterval(tickHandle); G.phase = "lobby"; render(); broadcast();
+      });
+    }
+  }
+  broadcast();
+}
+
+// =====================================================================
+//  MODE TÉLÉPHONE (manette d'équipe)
+// =====================================================================
+const P = { room: null, team: null, view: null, conn: null, peer: null, status: "connexion", answered: null, localLeft: 0, timer: null };
+
+function startPhone(room) {
+  P.room = room.toUpperCase();
+  const mem = store.get("ecoville-phone");
+  if (mem && mem.room === P.room) P.team = mem.team;
+  renderPhone();
+  if (typeof Peer === "undefined") { P.status = "indisponible"; return renderPhone(); }
+  P.peer = new Peer({ debug: 0 });
+  P.peer.on("open", connectPhone);
+  P.peer.on("error", e => { if (e.type === "peer-unavailable") { P.status = "salle introuvable"; renderPhone(); setTimeout(connectPhone, 4000); } });
+  P.peer.on("disconnected", () => { try { P.peer.reconnect(); } catch {} });
+}
+function connectPhone() {
+  if (P.conn && P.conn.open) return;
+  P.status = "connexion"; renderPhone();
+  const conn = P.peer.connect(PEER_PREFIX + P.room.toLowerCase(), { reliable: true });
+  P.conn = conn;
+  conn.on("open", () => { P.status = "connecté"; if (P.team != null) conn.send({ t: "join", team: P.team }); conn.send({ t: "hello" }); });
+  conn.on("data", v => { onView(v); });
+  conn.on("close", () => { P.status = "reconnexion"; renderPhone(); setTimeout(connectPhone, 2500); });
+}
+function send(msg) { if (P.conn && P.conn.open) try { P.conn.send(msg); } catch {} }
+function onView(v) {
+  if (!v || typeof v !== "object") return;
+  const prev = P.view;
+  P.view = v;
+  if (P.team != null && v.team == null && v.phase !== undefined) send({ t: "join", team: P.team });
+  if (v.q && (!prev || !prev.q || prev.q.qid !== v.q.qid)) { P.answered = v.q.mine; startLocalTimer(v.q.left); }
+  renderPhone();
+}
+function startLocalTimer(s) {
+  clearInterval(P.timer); P.localLeft = s;
+  P.timer = setInterval(() => { P.localLeft = Math.max(0, P.localLeft - 1); const el = $("#phleft"); if (el) el.textContent = P.localLeft + " s"; if (!P.localLeft) clearInterval(P.timer); }, 1000);
+}
+
+function renderPhone() {
+  const app = $("#app"), v = P.view;
+  const connCls = P.status === "connecté" ? "" : "off";
+  let body = "";
+  if (!v) {
+    body = `<div class="ph-big">${P.status === "indisponible" ? "Connexion impossible depuis ce navigateur." : P.status === "salle introuvable" ? `Salle ${esc(P.room)} introuvable.<br><small class="ph-sub">Vérifie le code affiché au tableau. Nouvel essai…</small>` : "Connexion à la salle…"}</div>`;
+  } else if (P.team == null || v.team == null && P.team == null) {
+    body = `<div class="ph-big">Quelle est ton équipe ?</div>
+      <div class="ph-pick">${v.teams.map((t, i) => `<button data-team="${i}" style="background:${t.color}">${esc(t.name)}<small>${t.phone ? "déjà un téléphone" : "libre"}</small></button>`).join("")}</div>`;
+  } else {
+    const t = v.teams[P.team] || { name: "?", color: "#555" };
+    const head = `<div class="ph-team" style="background:${t.color}"><span>${esc(t.name)}</span><span class="sc">${v.me ? v.me.score + " pts · " + v.me.rank + "e" : ""}</span></div>`;
+    if (v.phase === "lobby") body = head + `<div class="ph-big">C'est prêt !</div><p class="ph-sub">La partie commence bientôt. Regardez le tableau.</p><button class="btn ghost small" id="change">Changer d'équipe</button>`;
+    else if (v.phase === "choose" && v.isChooser) body = head + `<div class="ph-big" style="padding:12px 0">À vous de choisir le quartier !</div><p class="ph-sub" style="margin-top:-8px">Votre bonne réponse comptera double.</p>
+      <div class="ph-pick">${v.districts.map(d => `<button data-k="${d.k}" style="background:${districtBg(d.h)}">${esc(d.name)}<small>${esc(d.theme)} · ${d.h} %</small></button>`).join("")}</div>`;
+    else if (v.phase === "choose") body = head + `<div class="ph-big">${esc(v.chooserName)} choisit un quartier…</div><p class="ph-sub">Préparez-vous à répondre.</p>`;
+    else if (v.phase === "question") {
+      const done = P.answered != null;
+      body = head + `<div class="row" style="justify-content:space-between"><span class="tag">${esc(v.q.district)} · ${esc(v.q.theme)}</span><span class="roundinfo" id="phleft">${P.localLeft} s</span></div>
+        <div class="ph-q">${esc(v.q.text)}</div>
+        <div class="ph-ans">${v.q.opts.map((o, k) => `<button class="k${k + 1} ${P.answered === k ? "sel" : ""}" data-a="${k}" ${done ? "disabled" : ""}><span class="k">${LETTERS[k]}</span><span>${esc(o)}</span></button>`).join("")}</div>
+        ${done ? `<p class="ph-sub">Réponse envoyée. Attendez la correction au tableau.</p>` : ""}`;
+    } else if (v.phase === "reveal") {
+      const r = v.res;
+      body = head + `<div class="ph-res ${r.ok == null ? "none" : r.ok ? "ok" : "ko"}"><div class="big">${r.ok == null ? "Pas de réponse" : r.ok ? "Bravo ! +" + r.gain : "Raté…"}</div>
+        <div>Bonne réponse : <b>${esc(r.correct)}</b></div></div><p class="ph-sub">${esc(r.expl)}</p>`;
+    } else if (v.phase === "event") body = head + `<div class="ph-big">Événement : ${esc(v.event.title)}</div><p class="ph-sub">${esc(v.event.text)}</p>`;
+    else if (v.phase === "end") body = head + `<div class="ph-big">${v.won ? "Écoville est sauvée !" : "Fin de la quête"}</div><p class="ph-sub">Votre équipe termine ${v.me.rank}e avec ${v.me.score} points.</p>`;
+  }
+  app.innerHTML = `<div class="phone">
+    <div class="ph-head"><h1 style="font-size:1.6rem;color:var(--accent)">Écoville</h1><span class="ph-conn ${connCls}">salle ${esc(P.room)} · ${esc(P.status)}</span></div>
+    ${body}</div>`;
+  app.querySelectorAll(".ph-pick button[data-team]").forEach(b => b.addEventListener("click", () => {
+    P.team = +b.dataset.team; store.set("ecoville-phone", { room: P.room, team: P.team }); send({ t: "join", team: P.team }); renderPhone();
+  }));
+  app.querySelectorAll(".ph-pick button[data-k]").forEach(b => b.addEventListener("click", () => send({ t: "pick", k: b.dataset.k })));
+  app.querySelectorAll(".ph-ans button").forEach(b => b.addEventListener("click", () => {
+    if (P.answered != null) return; P.answered = +b.dataset.a; send({ t: "ans", i: P.answered, qid: P.view.q.qid }); renderPhone();
+  }));
+  $("#change")?.addEventListener("click", () => { P.team = null; store.set("ecoville-phone", null); renderPhone(); });
+}
+
+// =====================================================================
+//  DÉMARRAGE
+// =====================================================================
+const params = new URLSearchParams(location.search);
+const MODE = params.get("salle") ? "phone" : "host";
+if (MODE === "phone") startPhone(params.get("salle"));
+else { render(); startHost(); }
+</script>
