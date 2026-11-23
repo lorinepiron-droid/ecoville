@@ -291,6 +291,11 @@ select, input[type=text] { font: inherit; font-weight: 800; padding: 9px 10px; b
 .ph-res { border: 3px solid var(--ink); border-radius: 18px; box-shadow: var(--shadow); padding: 22px 16px; text-align: center; }
 .ph-res.ok { background: #7bd389; } .ph-res.ko { background: #ff8a70; animation: shake 0.12s linear 6; } .ph-res.none { background: #ddd; }
 .news:not(.good) .flash { animation: shake 0.12s linear 6; }
+.phone.quake { animation: quake 0.09s linear 12; }
+@keyframes quake { 0% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(-9px, 3px) rotate(-1.5deg); } 50% { transform: translate(8px, -4px) rotate(1.5deg); } 75% { transform: translate(-6px, -2px) rotate(-1deg); } 100% { transform: translate(0, 0) rotate(0); } }
+.redflash { position: fixed; inset: 0; z-index: 40; pointer-events: none; background: radial-gradient(circle, rgba(255,80,60,0) 30%, rgba(228,50,30,0.65) 100%); animation: redflash 1.1s ease-out forwards; }
+@keyframes redflash { 0%, 30% { opacity: 1; } 15%, 45% { opacity: 0.35; } 100% { opacity: 0; } }
+.hapt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); opacity: 0; }
 .ph-res .big { font-family: var(--comic); font-size: 2.8rem; letter-spacing: 0.04em; line-height: 1; animation: pop 0.5s cubic-bezier(.2,1.6,.4,1) both; }
 .ph-conn { font-family: var(--comic); letter-spacing: 0.05em; font-size: 0.95rem; background: #fff; border: 2px solid var(--ink); border-radius: 8px; padding: 2px 8px; }
 .ph-conn.off { background: #ff8a70; }
@@ -696,7 +701,7 @@ const PEER_PREFIX = "ecoville-qst-";
 const LETTERS = "ABCD";
 
 // ---------- version : l'écran et les téléphones doivent afficher la même ----------
-const APP_VERSION = "8";
+const APP_VERSION = "9";
 function checkVersion() {
   const base = location.pathname;
   fetch(base + "?_=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(txt => {
@@ -1343,13 +1348,43 @@ function onView(v) {
   const prev = P.view;
   P.view = v;
   if (P.team != null && v.team == null) send({ t: "join", team: P.team });
-  if (v.q && (!prev || !prev.q || prev.q.qid !== v.q.qid)) { P.answered = v.q.mine; startLocalTimer(v.q.left); sfx.question(); try { navigator.vibrate?.(120); } catch {} }
-  if (v.phase === "reveal" && prev && prev.phase !== "reveal") { v.res && v.res.ok ? sfx.good() : sfx.bad(); try { navigator.vibrate?.(v.res && v.res.ok ? [60, 40, 60, 40, 120] : [300, 80, 300]); } catch {} }
+  if (v.q && (!prev || !prev.q || prev.q.qid !== v.q.qid)) { P.answered = v.q.mine; startLocalTimer(v.q.left); sfx.question(); buzz(120, 2); }
+  const revealNow = v.phase === "reveal" && prev && prev.phase !== "reveal";
   if (prev && prev.phase !== v.phase && v.phase === "choose") sfx.page();
   if (prev && prev.phase !== v.phase && v.phase === "event") v.event && v.event.good ? sfx.goodNews() : sfx.badNews();
   if (prev && prev.phase !== v.phase && v.phase === "end") v.won ? sfx.win() : sfx.badNews();
   if (prev && prev.intro !== v.intro && v.intro != null) sfx.page();
   renderPhone();
+  if (revealNow) {
+    if (v.res && v.res.ok) { sfx.good(); buzz([60, 40, 60, 40, 120], 3); }
+    else { sfx.bad(); failFx(); }
+  }
+}
+// Vibration : Android via navigator.vibrate ; iPhone (iOS 18+) : chaque bascule d'un interrupteur
+// <input switch> produit un petit « tic » tactile. Best effort : sans effet sur les autres appareils.
+let haptLabel = null;
+function iosTicks(n, gap = 70) {
+  try {
+    if (!haptLabel) {
+      haptLabel = document.createElement("label"); haptLabel.className = "hapt"; haptLabel.setAttribute("aria-hidden", "true");
+      const inp = document.createElement("input"); inp.type = "checkbox"; inp.setAttribute("switch", ""); inp.tabIndex = -1;
+      haptLabel.appendChild(inp); document.body.appendChild(haptLabel);
+    }
+    for (let i = 0; i < n; i++) setTimeout(() => { try { haptLabel.click(); } catch {} }, i * gap);
+  } catch {}
+}
+function buzz(pattern, ticks) {
+  let ok = false;
+  try { ok = !!(navigator.vibrate && navigator.vibrate(pattern)); } catch {}
+  if (!ok) iosTicks(ticks);
+}
+function failFx() {
+  // « brrr… brrr… brrrrrr » + écran qui tremble et flash rouge
+  buzz([400, 120, 400, 120, 900], 14);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const ph = document.querySelector(".phone");
+  if (ph) { ph.classList.remove("quake"); void ph.offsetWidth; ph.classList.add("quake"); setTimeout(() => ph.classList.remove("quake"), 1200); }
+  const f = document.createElement("div"); f.className = "redflash"; document.body.appendChild(f); setTimeout(() => f.remove(), 1200);
 }
 function startLocalTimer(s) {
   clearInterval(P.timer); P.localLeft = s;
