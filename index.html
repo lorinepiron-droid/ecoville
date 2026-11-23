@@ -1,4 +1,7 @@
 <title>Écoville</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">
@@ -210,6 +213,40 @@ select, input[type=text] { font: inherit; font-weight: 800; padding: 9px 10px; b
 .confetti i { position: absolute; top: -20px; width: 12px; height: 18px; border: 2px solid var(--ink); animation: fall linear forwards; }
 @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
 
+/* ---------- histoire d'introduction ---------- */
+.introwrap { display: flex; flex-direction: column; gap: 18px; }
+.introhead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.introhead .logo { font-size: clamp(2.2rem, 4.4vw, 3.2rem); }
+.intro { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 24px; align-items: center; min-height: 62vh; }
+.intro-text { display: flex; flex-direction: column; gap: 14px; position: relative; }
+.intro-text .chap { position: absolute; top: -16px; left: 16px; font-family: var(--comic); letter-spacing: 0.06em; background: var(--red); color: #fff; border: 3px solid var(--ink); padding: 0 12px; transform: rotate(-3deg); box-shadow: 3px 3px 0 var(--ink); }
+.ititle { font-family: var(--comic); font-size: clamp(2.2rem, 4.6vw, 3.8rem); letter-spacing: 0.04em; line-height: 1; color: var(--sun); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); margin-top: 8px; }
+.itext { font-size: clamp(1.15rem, 2vw, 1.6rem); font-weight: 800; line-height: 1.4; margin: 0; min-height: 5.6em; }
+.itext .caret { display: inline-block; width: 0.5em; height: 1em; background: var(--ink); vertical-align: -0.12em; margin-left: 2px; animation: blink 0.8s steps(2, jump-none) infinite; }
+.minigrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mini { border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; background: var(--paper); box-shadow: 4px 4px 0 var(--ink); display: flex; flex-direction: column; min-width: 0; }
+.mini .scene { border-bottom: 3px solid var(--ink); }
+.mini span { color: #fff; font-family: var(--display); font-size: clamp(0.8rem, 1.2vw, 1rem); padding: 4px 8px; -webkit-text-stroke: 0.6px var(--ink); paint-order: stroke fill; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.introwrap .cl, .introwrap .dt, .introwrap .sk, .introwrap .bl { transition-duration: 3.5s; }
+.mini.sick { animation: sick 0.5s ease-in-out 4.2s 2; }
+@keyframes sick { 25% { transform: translateX(-4px) rotate(-1deg); } 75% { transform: translateX(4px) rotate(1deg); } }
+.mission { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.mission .mascot { width: 180px; height: 180px; }
+.goalbig { font-family: var(--comic); font-size: clamp(3rem, 7vw, 5.5rem); line-height: 1; color: #7bd389; -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 5px 5px 0 var(--ink); transform: rotate(-4deg); }
+.goalcap { font-family: var(--display); font-size: clamp(1rem, 1.8vw, 1.35rem); }
+.how { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.howcard { background: #fff; border: 3px solid var(--ink); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); padding: 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.howcard:nth-child(odd) { transform: rotate(-1deg); } .howcard:nth-child(even) { transform: rotate(1deg); }
+.howcard .n { width: 38px; height: 38px; border-radius: 50%; border: 3px solid var(--ink); background: var(--sun); display: grid; place-items: center; font-family: var(--comic); font-size: 1.4rem; }
+.howcard b { font-family: var(--display); font-weight: 400; font-size: clamp(1.05rem, 1.7vw, 1.3rem); }
+.howcard p { margin: 0; font-size: 0.95rem; color: var(--muted); }
+.intronav { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.dots { display: flex; gap: 8px; }
+.dots span { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--ink); background: #fff; }
+.dots span.on { background: var(--sun); transform: scale(1.2); }
+.ver { font-family: var(--comic); letter-spacing: 0.05em; font-size: 0.85rem; color: var(--muted); }
+.storybtn { display: flex; align-items: center; gap: 12px; }
+
 /* ---------- téléphone ---------- */
 .phone { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
 .ph-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -240,8 +277,16 @@ select, input[type=text] { font: inherit; font-weight: 800; padding: 9px 10px; b
 .ph-timer { font-family: var(--comic); font-size: 1.6rem; background: var(--sun); border: 3px solid var(--ink); border-radius: 12px; padding: 0 10px; box-shadow: 3px 3px 0 var(--ink); }
 
 @media (max-width: 1100px) {
-  .game, .lobby { grid-template-columns: minmax(0, 1fr); }
+  .game, .lobby, .intro { grid-template-columns: minmax(0, 1fr); }
+  .intro { min-height: 0; }
 }
+.phone .intro { grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 18px; }
+.phone .ititle { font-size: 2.2rem; }
+.phone .itext { font-size: 1.1rem; min-height: 0; }
+.phone .minigrid { gap: 8px; }
+.phone .mini span { font-size: 0.75rem; }
+.phone .mission .mascot { width: 110px; height: 110px; }
+.phone .how { grid-template-columns: minmax(0, 1fr); }
 @media (max-width: 760px) {
   .city { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .qwrap { grid-template-columns: minmax(0, 1fr); }
@@ -505,6 +550,75 @@ const START_HEALTH = 20, GOAL = 80;
 const PEER_PREFIX = "ecoville-qst-";
 const LETTERS = "ABCD";
 
+// ---------- version : l'écran et les téléphones doivent afficher la même ----------
+const APP_VERSION = "4";
+function checkVersion() {
+  const base = location.pathname;
+  fetch(base + "?_=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(txt => {
+    const m = txt.match(/const APP_VERSION = "(\d+)"/);
+    if (!m || m[1] === APP_VERSION) return;
+    const q = new URLSearchParams(location.search);
+    if (q.get("v") === m[1]) return; // déjà tenté : on évite une boucle
+    q.set("v", m[1]);
+    location.replace(base + "?" + q.toString());
+  }).catch(() => {});
+}
+
+// ---------- histoire d'introduction (planches BD) ----------
+const INTRO = [
+  { t: "IL ÉTAIT UNE FOIS… ÉCOVILLE", v: "clean",
+    x: "Une petite ville où il faisait bon vivre. L'air était pur, la mer bleue, les arbres poussaient partout et les habitants étaient heureux." },
+  { t: "MAIS PEU À PEU…", v: "fade",
+    x: "On a acheté toujours plus de vêtements, changé de téléphone chaque année, jeté du plastique partout et gaspillé la nourriture. Et les machines numériques ont tourné jour et nuit…" },
+  { t: "ÉCOVILLE ÉTOUFFE !", v: "dirty",
+    x: "Les six quartiers sont malades. Le Recyparc déborde, le Port est envahi de plastique, l'École croule sous les vieux téléphones et le smog cache le soleil." },
+  { t: "VOTRE MISSION", v: "mission",
+    x: "Votre classe devient la Brigade verte ! Chaque bonne réponse soigne un quartier. Si les six quartiers atteignent " + GOAL + " % avant la fin du jeu, toute la classe gagne." },
+  { t: "COMMENT ON JOUE ?", v: "how",
+    x: "Ensemble pour sauver la ville, et en compétition pour les points : l'équipe qui en a le plus devient championne d'Écoville !" },
+];
+const HOW = [
+  ["Une équipe choisit", "À chaque manche, une équipe choisit le quartier à soigner. Sa bonne réponse compte double."],
+  ["Tout le monde répond", "Toutes les équipes répondent en même temps sur leur téléphone, avant la fin du chrono."],
+  ["Vite et juste", "Une bonne réponse rapporte des points, et encore plus si elle est rapide. Elle soigne aussi le quartier."],
+  ["Gare aux surprises", "Toutes les 4 manches, un événement peut aider ou abîmer un quartier."],
+];
+function introVisual(s) {
+  if (s.v === "clean" || s.v === "fade" || s.v === "dirty") {
+    const h = s.v === "dirty" ? 0.15 : 1;
+    return `<div class="minigrid">${DISTRICTS.map(d => `<div class="mini ${s.v === "fade" ? "sick" : ""}" style="--h:${h};--b:${h >= 0.8 ? 1 : 0}" ${s.v === "fade" ? 'data-fade="1"' : ""}><div class="scene">${SCENES[d.k]}</div><span style="background:${d.color}">${esc(d.name)}</span></div>`).join("")}</div>`;
+  }
+  if (s.v === "mission") return `<div class="mission">${MASCOT}<div class="goalbig">6 × ${GOAL} %</div><div class="goalcap">= Écoville est sauvée !</div></div>`;
+  return `<div class="how">${HOW.map(([b, p], i) => `<div class="howcard"><span class="n">${i + 1}</span><b>${b}</b><p>${p}</p></div>`).join("")}</div>`;
+}
+function introSlide(i) {
+  const s = INTRO[i];
+  return `<div class="intro">
+    <div class="intro-vis">${introVisual(s)}</div>
+    <div class="panel intro-text"><span class="chap">CHAPITRE ${i + 1}</span><h2 class="ititle">${s.t}</h2><p class="itext" id="itext"></p></div>
+  </div>`;
+}
+let typeHandle = null;
+function mountIntro(i) {
+  // assombrir les quartiers sur la planche « peu à peu »
+  document.querySelectorAll('.mini[data-fade="1"]').forEach(el => setTimeout(() => { el.style.setProperty("--h", "0.15"); el.style.setProperty("--b", "0"); }, 700));
+  const el = $("#itext"), full = INTRO[i].x;
+  clearInterval(typeHandle);
+  if (!el) return;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = full; return; }
+  let n = 0;
+  const caret = '<span class="caret"></span>';
+  el.innerHTML = caret;
+  typeHandle = setInterval(() => {
+    n = Math.min(full.length, n + 2);
+    el.innerHTML = esc(full.slice(0, n)) + (n < full.length ? caret : "");
+    if (n % 6 === 0) tone(1200 + Math.random() * 300, 0.02, "square", 0, 0.015);
+    if (n >= full.length) clearInterval(typeHandle);
+  }, 30);
+  el.onclick = () => { clearInterval(typeHandle); el.textContent = full; };
+}
+const dots = i => `<div class="dots">${INTRO.map((_, k) => `<span class="${k === i ? "on" : ""}"></span>`).join("")}</div>`;
+
 // ---------- utilitaires ----------
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -547,7 +661,7 @@ const G = {
   room: saved.room || newRoom(),
   year: saved.year || 3, nTeams: saved.nTeams || 6, rounds: saved.rounds || 18, timer: saved.timer || 30,
   names: saved.names || TEAM_PRESETS.map(t => t.name),
-  phase: "lobby", teams: [], districts: DISTRICTS.map(d => ({ ...d, h: START_HEALTH })), round: 0, chooser: 0, cur: null, used: [], event: null, lastDelta: null,
+  phase: "lobby", intro: null, teams: [], districts: DISTRICTS.map(d => ({ ...d, h: START_HEALTH })), round: 0, chooser: 0, cur: null, used: [], event: null, lastDelta: null,
 };
 let net = "connecting"; // connecting | on | off
 let peer = null;
@@ -588,8 +702,9 @@ function onPhone(pid, d) {
 }
 
 function viewFor(team) {
-  const v = { phase: G.phase, round: G.round, rounds: G.rounds, room: G.room,
+  const v = { ver: APP_VERSION, phase: G.phase, round: G.round, rounds: G.rounds, room: G.room,
     teams: (G.phase === "lobby" ? G.names.slice(0, G.nTeams) : G.teams.map(t => t.name)).map((n, i) => ({ name: n, color: TEAM_PRESETS[i].color, phone: teamHasPhone(i) })) };
+  if (G.phase === "lobby" && G.intro != null) v.intro = G.intro;
   if (team == null || team >= G.nTeams) return v;
   v.team = team;
   if (G.phase !== "lobby") {
@@ -607,6 +722,7 @@ function viewFor(team) {
   if (G.phase === "reveal") { const t = G.teams[team]; v.res = { ok: t.ok, gain: t.gain, correct: G.cur.opts[G.cur.correct], expl: G.cur.e }; }
   if (G.phase === "event") v.event = { title: G.event.title, text: G.event.text, good: !!G.event.good };
   if (G.phase === "end") v.won = G.districts.every(d => d.h >= GOAL);
+  if (G.phase === "lobby" && G.intro != null) v.intro = G.intro;
   return v;
 }
 function sendView(pid) { const c = conns.get(pid); if (c && c.conn.open) { try { c.conn.send(viewFor(c.team)); } catch {} } }
@@ -614,6 +730,7 @@ function broadcast() { for (const pid of conns.keys()) sendView(pid); }
 
 // ---------- déroulement ----------
 function startGame() {
+  G.intro = null;
   initAudio(); sfx.start();
   saveSetup();
   G.teams = G.names.slice(0, G.nTeams).map((n, i) => ({ name: (n || "").trim() || TEAM_PRESETS[i].name, color: TEAM_PRESETS[i].color, score: 0, ans: null, at: 0, ok: null, gain: 0 }));
@@ -762,7 +879,7 @@ function renderLobby() {
         <span class="joined ${teamHasPhone(i) ? "on" : ""}">${teamHasPhone(i) ? "PRÊTE !" : "…"}</span></div>`).join("");
   return `
   <header class="hero">
-    <div><span class="logo">ÉCO<span class="v">VILLE</span></span><div class="tagline">La quête écologique de toute la classe</div></div>
+    <div><span class="logo">ÉCO<span class="v">VILLE</span></span><div class="tagline">La quête écologique de toute la classe</div><span class="ver">version ${APP_VERSION}</span></div>
     <div class="row" style="gap:14px"><button class="iconbtn" id="sound" aria-label="${soundOn ? "Couper le son" : "Activer le son"}">${soundOn ? SOUND_ON : SOUND_OFF}</button></div>
   </header>
   <div class="talk">${MASCOT}<div class="bubble">Au secours ! Les six quartiers d'Écoville sont pollués. Répondez juste pour les soigner : si tous atteignent <b>${GOAL} %</b> avant la fin, toute la classe gagne !</div></div>
@@ -780,7 +897,7 @@ function renderLobby() {
         <div class="field"><label for="timer">Temps par question</label><select id="timer">${[20, 30, 45, 60].map(v => `<option value="${v}" ${G.timer === v ? "selected" : ""}>${v} secondes</option>`).join("")}</select></div>
       </div>
       <div class="teamlist">${teamRows}</div>
-      <div class="row" style="margin-top:18px;justify-content:space-between"><button class="btn green big" id="start">C'EST PARTI !</button>
+      <div class="row" style="margin-top:18px;justify-content:space-between"><div class="row"><button class="btn white" id="story">▶ L'HISTOIRE</button><button class="btn green big" id="start">C'EST PARTI !</button></div>
         <span class="hint">${Q.length} questions · 6 quartiers</span></div>
     </div>
   </section>
@@ -857,9 +974,41 @@ function renderGame() {
 }
 
 let confirmQuit = false;
+function renderIntroHost() {
+  const i = G.intro, last = i === INTRO.length - 1;
+  return `<div class="introwrap" id="intro" data-i="${i}">
+    <div class="introhead"><span class="logo">ÉCO<span class="v">VILLE</span></span>
+      <div class="row"><span class="ver">version ${APP_VERSION}</span><button class="iconbtn" id="sound" aria-label="${soundOn ? "Couper le son" : "Activer le son"}">${soundOn ? SOUND_ON : SOUND_OFF}</button></div></div>
+    ${introSlide(i)}
+    <div class="intronav">
+      <button class="btn white small" id="iskip">Passer l'histoire</button>
+      ${dots(i)}
+      <div class="row"><button class="btn white" id="iprev" ${i === 0 ? "disabled" : ""}>◀</button><button class="btn ${last ? "green" : ""} big" id="inext">${last ? "À VOS TÉLÉPHONES !" : "SUITE ▶"}</button></div>
+    </div></div>`;
+}
+function setIntro(i) { initAudio(); G.intro = i; if (i != null) sfx.pick(); render(); }
+document.addEventListener("keydown", e => {
+  if (MODE !== "host" || G.phase !== "lobby" || G.intro == null) return;
+  if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); setIntro(G.intro < INTRO.length - 1 ? G.intro + 1 : null); }
+  else if (e.key === "ArrowLeft" && G.intro > 0) setIntro(G.intro - 1);
+  else if (e.key === "Escape") setIntro(null);
+});
+
 function render() {
   if (MODE !== "host") return;
   const app = $("#app");
+  if (G.phase === "lobby" && G.intro != null) {
+    const cur = $("#intro");
+    if (!cur || +cur.dataset.i !== G.intro) {
+      app.innerHTML = renderIntroHost();
+      mountIntro(G.intro);
+      $("#sound")?.addEventListener("click", () => { soundOn = !soundOn; store.set("ecoville-sound", soundOn); initAudio(); app.innerHTML = ""; render(); });
+      $("#iskip").addEventListener("click", () => setIntro(null));
+      $("#iprev").addEventListener("click", () => setIntro(Math.max(0, G.intro - 1)));
+      $("#inext").addEventListener("click", () => setIntro(G.intro < INTRO.length - 1 ? G.intro + 1 : null));
+    }
+    return broadcast();
+  }
   const focused = document.activeElement && document.activeElement.id;
   app.innerHTML = G.phase === "lobby" ? renderLobby() : renderGame();
   if (focused && focused.startsWith("tn") && $("#" + focused)) { const el = $("#" + focused); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
@@ -874,6 +1023,7 @@ function render() {
     app.querySelectorAll("[id^=tn]").forEach(el => el.addEventListener("input", e => { G.names[+e.target.dataset.i] = e.target.value; saveSetup(); }));
     app.querySelectorAll("[id^=tn]").forEach(el => el.addEventListener("change", () => render()));
     $("#start").addEventListener("click", startGame);
+    $("#story").addEventListener("click", () => setIntro(0));
   } else {
     app.querySelectorAll("button.tile[data-k]").forEach(b => b.addEventListener("click", () => chooseDistrict(b.dataset.k)));
     app.querySelectorAll(".manual button").forEach(b => b.addEventListener("click", () => setAnswer(+b.dataset.team, +b.dataset.a, true)));
@@ -897,12 +1047,12 @@ function render() {
 // =====================================================================
 //  MODE TÉLÉPHONE (manette d'équipe)
 // =====================================================================
-const P = { room: null, team: null, view: null, conn: null, peer: null, status: "connexion", answered: null, localLeft: 0, timer: null };
+const P = { room: null, team: null, view: null, conn: null, peer: null, status: "connexion", answered: null, localLeft: 0, timer: null, li: 0, introDone: false, shown: null };
 
 function startPhone(room) {
   P.room = room.toUpperCase();
   const mem = store.get("ecoville-phone");
-  if (mem && mem.room === P.room) P.team = mem.team;
+  if (mem && mem.room === P.room) { P.team = mem.team; P.introDone = true; }
   renderPhone();
   if (typeof Peer === "undefined") { P.status = "indisponible"; return renderPhone(); }
   P.peer = new Peer({ debug: 0 });
@@ -936,6 +1086,27 @@ function startLocalTimer(s) {
 
 function renderPhone() {
   const app = $("#app"), v = P.view;
+  // histoire : pilotée par le tableau, ou lue seul avant de choisir son équipe
+  const hostIntro = v && v.phase === "lobby" && v.intro != null ? v.intro : null;
+  const localIntro = v && hostIntro == null && P.team == null && !P.introDone && v.phase === "lobby" ? P.li : null;
+  const introIdx = hostIntro ?? localIntro;
+  if (introIdx != null) {
+    const key = (hostIntro != null ? "h" : "l") + introIdx;
+    if (P.shown === key) return;
+    P.shown = key;
+    const last = introIdx === INTRO.length - 1;
+    app.innerHTML = `<div class="phone introwrap">
+      <div class="ph-head"><span class="logo">ÉCO<span class="v">VILLE</span></span><span class="ver">version ${APP_VERSION}</span></div>
+      ${introSlide(introIdx)}
+      ${hostIntro != null ? `<div class="intronav" style="justify-content:center">${dots(introIdx)}</div><p class="ph-sub">Regardez le tableau, l'histoire continue…</p>`
+        : `<div class="intronav">${dots(introIdx)}<div class="row"><button class="btn white small" id="lskip">Passer</button><button class="btn ${last ? "green" : ""}" id="lnext">${last ? "CHOISIR MON ÉQUIPE" : "SUITE ▶"}</button></div></div>`}
+    </div>`;
+    mountIntro(introIdx);
+    $("#lnext")?.addEventListener("click", () => { if (last) P.introDone = true; else P.li++; renderPhone(); });
+    $("#lskip")?.addEventListener("click", () => { P.introDone = true; renderPhone(); });
+    return;
+  }
+  P.shown = null;
   const connCls = P.status === "connecté" ? "" : "off";
   const mascotSm = MASCOT.replace('class="mascot"', 'class="mascot sm"');
   let body = "";
@@ -944,6 +1115,7 @@ function renderPhone() {
     body = `<div class="talk">${mascotSm}<div class="bubble">${msg}</div></div>`;
   } else if (P.team == null) {
     body = `<div class="talk">${mascotSm}<div class="bubble">Salut ! Quelle est ton équipe ?</div></div>
+      <button class="btn white small" id="replay">▶ Revoir l'histoire</button>
       <div class="ph-pick">${v.teams.map((t, i) => `<button data-team="${i}" style="background:${t.color}"><span class="nmx">${esc(t.name)}<small>${t.phone ? "déjà un téléphone" : "libre"}</small></span></button>`).join("")}</div>`;
   } else {
     const t = v.teams[P.team] || { name: "?", color: "#777" };
@@ -967,7 +1139,8 @@ function renderPhone() {
   }
   app.innerHTML = `<div class="phone">
     <div class="ph-head"><span class="logo">ÉCO<span class="v">VILLE</span></span><span class="ph-conn ${connCls}">SALLE ${esc(P.room)} · ${esc(P.status.toUpperCase())}</span></div>
-    ${body}</div>`;
+    ${body}
+    <p class="ver" style="text-align:center;margin:8px 0 0">version ${APP_VERSION}${v && v.ver && v.ver !== APP_VERSION ? " · le tableau a la version " + esc(v.ver) + " : rechargez la page" : ""}</p></div>`;
   app.querySelectorAll(".ph-pick button[data-team]").forEach(b => b.addEventListener("click", () => {
     P.team = +b.dataset.team; store.set("ecoville-phone", { room: P.room, team: P.team }); send({ t: "join", team: P.team }); renderPhone();
   }));
@@ -976,6 +1149,7 @@ function renderPhone() {
     if (P.answered != null) return; P.answered = +b.dataset.a; send({ t: "ans", i: P.answered, qid: P.view.q.qid }); renderPhone();
   }));
   $("#change")?.addEventListener("click", () => { P.team = null; store.set("ecoville-phone", null); renderPhone(); });
+  $("#replay")?.addEventListener("click", () => { P.introDone = false; P.li = 0; renderPhone(); });
 }
 
 // =====================================================================
@@ -983,6 +1157,7 @@ function renderPhone() {
 // =====================================================================
 const params = new URLSearchParams(location.search);
 const MODE = params.get("salle") ? "phone" : "host";
+checkVersion();
 if (MODE === "phone") startPhone(params.get("salle"));
 else { render(); startHost(); }
 </script>
